@@ -19,50 +19,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
-    /* ===== LOGIN ===== */
-    #loginScreen {
-      display: flex; align-items: center; justify-content: center; min-height: 100vh;
-      background: linear-gradient(135deg, rgba(var(--bm-ink),1) 0%, #3d2518 100%);
-    }
-    .login-box {
-      background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.13); border-radius: 24px;
-      padding: 48px 40px; width: 380px; text-align: center;
-    }
-    .login-logo { margin-bottom: 16px; }
-    .login-logo img { width: 160px; height: auto; }
-    .login-subtitle { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 28px; }
-    .login-time { font-size: 44px; font-weight: 200; color: var(--bm-cream); letter-spacing: 3px; margin-bottom: 6px; }
-    .login-date { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
-
-    .login-face-section { margin-bottom: 16px; border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.3); position: relative; }
-    #loginVideo { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; border-radius: 16px; }
-    .login-face-status { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 500; padding: 8px 12px; text-align: center; transition: color 0.3s; }
-    .login-face-status.ok { color: var(--bm-teal); }
-
-    .login-divider { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.25); font-size: 12px; margin: 14px 0; }
-    .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
-
-    .login-input {
-      width: 100%; padding: 14px 18px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
-      color: var(--bm-cream); font-size: 16px; margin-bottom: 16px; text-align: center;
-      letter-spacing: 4px; outline: none; transition: border-color 0.2s;
-    }
-    .login-input:focus { border-color: var(--bm-coral); }
-    .login-input::placeholder { letter-spacing: 1px; color: rgba(255,255,255,0.25); }
-    .login-btn {
-      width: 100%; padding: 14px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
-      color: white; font-size: 16px; font-weight: 600; border: none; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(242,144,108,0.4); transition: transform 0.1s, box-shadow 0.2s;
-    }
-    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(242,144,108,0.5); }
-    .login-error { color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
-
-    /* ===== MAIN ===== */
-    #mainApp { display: none; min-height: 100vh; }
-
+    /* Sidebar */
     #sidebar {
       position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
       background: rgba(var(--bm-ink), 0.97); backdrop-filter: blur(20px);
@@ -80,6 +37,7 @@
     #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
     #sidebarOverlay.show { display: block; }
 
+    /* Topbar */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; height: 56px;
       background: rgba(var(--bm-ink), 0.97);
@@ -117,7 +75,7 @@
     .profile-child { font-size: 13px; color: rgba(var(--bm-ink),0.5); margin-top: 2px; }
     .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.35); color: #3aa8ae; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
 
-    .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; padding-bottom: 40px; }
+    .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; }
     .btn-pickup {
       flex: 1; padding: 22px; border-radius: 16px; border: none;
       font-size: 20px; font-weight: 700; cursor: pointer; letter-spacing: 0.03em;
@@ -128,6 +86,16 @@
     .btn-pickup:disabled { opacity: 0.22; cursor: not-allowed; transform: none !important; }
     .btn-pickup:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(242,144,108,0.48); }
     .btn-pickup:not(:disabled):active { transform: translateY(0); }
+
+    .add-parent-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 16px; margin-bottom: 40px;
+      padding: 10px 20px; border-radius: 10px;
+      background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.28);
+      color: #3aa8ae; font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .add-parent-link:hover { background: rgba(94,193,198,0.22); }
 
     /* Thanks Screen */
     #thanksScreen {
@@ -166,79 +134,64 @@
   <div class="loading-text" id="loadingText">起動中...</div>
 </div>
 
-<div id="loginScreen" style="display:none">
-  <div class="login-box">
-    <div class="login-logo"><img src="logo.webp" alt="BLUE MOUSE"></div>
-    <div class="login-subtitle">保護者お迎え記録システム</div>
-    <div class="login-time" id="loginTime">--:--:--</div>
-    <div class="login-date" id="loginDate"></div>
-    <input type="password" class="login-input" id="passwordInput" placeholder="管理者パスワードを入力" onkeydown="if(event.key==='Enter')login()">
-    <button class="login-btn" onclick="login()">管理者パスワードでログイン</button>
-    <div class="login-error" id="loginError">パスワードが正しくありません</div>
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div id="sidebar">
+  <div class="sidebar-logo">
+    <img src="logo.webp" alt="BLUE MOUSE">
+    <div class="sub">お迎え記録システム</div>
   </div>
+  <nav class="sidebar-nav">
+    <span class="sidebar-link" onclick="closeSidebar()"><span class="icon">🏠</span> お迎え画面</span>
+    <a href="admin.html" class="sidebar-link"><span class="icon">📋</span> 管理者ページ</a>
+    <a href="register.html?noauth=1" class="sidebar-link"><span class="icon">👤</span> 保護者を追加</a>
+  </nav>
 </div>
 
-<div id="mainApp">
-  <div id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <div id="sidebar">
-    <div class="sidebar-logo">
-      <img src="logo.webp" alt="BLUE MOUSE">
-      <div class="sub">お迎え記録システム</div>
-    </div>
-    <nav class="sidebar-nav">
-      <span class="sidebar-link" onclick="closeSidebar()"><span class="icon">🏠</span> お迎え画面</span>
-      <a href="admin.html" class="sidebar-link"><span class="icon">📋</span> 管理者ページ</a>
-      <span class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> ログアウト</span>
-    </nav>
-  </div>
-  <div class="topbar">
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-    <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo"></a>
-  </div>
+<div class="topbar">
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo"></a>
+</div>
 
-  <div id="clockScreen">
-    <div class="clock-time-section">
-      <div class="clock-time" id="clockTime">--:--:--</div>
-      <div class="clock-date" id="clockDate"></div>
-    </div>
-    <div class="camera-wrapper">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="overlay"></canvas>
-      <div class="camera-status" id="cameraStatus">カメラを起動中...</div>
-    </div>
-    <div id="profileCard">
-      <img id="parentPhotoEl" src="" alt="">
-      <div class="profile-info">
-        <div class="profile-name" id="parentNameEl"></div>
-        <div class="profile-child" id="childNameEl"></div>
-        <div class="auth-badge">✓ 顔認証完了</div>
-      </div>
-    </div>
-    <div class="action-buttons">
-      <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
-    </div>
-    <a href="register.html?noauth=1" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:32px;padding:10px 20px;border-radius:10px;background:rgba(94,193,198,0.12);border:1px solid rgba(94,193,198,0.28);color:#3aa8ae;font-size:14px;font-weight:600;text-decoration:none;transition:background 0.2s"
-      onmouseover="this.style.background='rgba(94,193,198,0.22)'" onmouseout="this.style.background='rgba(94,193,198,0.12)'">
-      ＋ 保護者様を追加する
-    </a>
+<!-- お迎え画面 -->
+<div id="clockScreen">
+  <div class="clock-time-section">
+    <div class="clock-time" id="clockTime">--:--:--</div>
+    <div class="clock-date" id="clockDate"></div>
   </div>
+  <div class="camera-wrapper">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="overlay"></canvas>
+    <div class="camera-status" id="cameraStatus">カメラを起動中...</div>
+  </div>
+  <div id="profileCard">
+    <img id="parentPhotoEl" src="" alt="">
+    <div class="profile-info">
+      <div class="profile-name" id="parentNameEl"></div>
+      <div class="profile-child" id="childNameEl"></div>
+      <div class="auth-badge">✓ 顔認証完了</div>
+    </div>
+  </div>
+  <div class="action-buttons">
+    <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
+  </div>
+  <a href="register.html?noauth=1" class="add-parent-link">＋ 保護者様を追加する</a>
+</div>
 
-  <div id="thanksScreen">
-    <div class="thanks-badge">✓ &nbsp;お迎え記録完了</div>
-    <div class="thanks-photo-wrap">
-      <div class="thanks-ring"></div>
-      <img class="thanks-photo" id="thanksPhoto" src="" alt="">
-    </div>
-    <div class="thanks-name" id="thanksName"></div>
-    <div class="thanks-child" id="thanksChild"></div>
-    <div class="thanks-message">お迎えありがとうございます！</div>
-    <div class="thanks-time" id="thanksTime"></div>
-    <div class="thanks-bar"><div class="thanks-bar-fill" id="thanksBar"></div></div>
+<!-- サンクス画面 -->
+<div id="thanksScreen">
+  <div class="thanks-badge">✓ &nbsp;お迎え記録完了</div>
+  <div class="thanks-photo-wrap">
+    <div class="thanks-ring"></div>
+    <img class="thanks-photo" id="thanksPhoto" src="" alt="">
   </div>
+  <div class="thanks-name" id="thanksName"></div>
+  <div class="thanks-child" id="thanksChild"></div>
+  <div class="thanks-message">お迎えありがとうございます！</div>
+  <div class="thanks-time" id="thanksTime"></div>
+  <div class="thanks-bar"><div class="thanks-bar-fill" id="thanksBar"></div></div>
 </div>
 
 <script>
-const STAFF_PASSWORD = 'mouse';
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
 const firebaseConfig = {
   apiKey: "AIzaSyAxkP1UP8UQffk8PxMp1_PUKNYaqo63QfU",
@@ -249,13 +202,13 @@ const firebaseConfig = {
   appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
 };
 
-let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, videoStream = null, lastFaceTime = 0, loginCameraStream = null, loginDetectionTimer = null;
+let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, videoStream = null, lastFaceTime = 0;
 
 window.addEventListener('load', async () => {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
-  startClock('loginTime', 'loginDate');
-  setLoadingText('顔認証モデルを読み込み中...');
+  startClock('clockTime', 'clockDate');
+  document.getElementById('loadingText').textContent = '顔認証モデルを読み込み中...';
   await waitForFaceApi();
   try {
     await Promise.all([
@@ -265,14 +218,12 @@ window.addEventListener('load', async () => {
     ]);
   } catch(e) { console.error(e); }
   document.getElementById('loadingOverlay').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  startLoginCamera();
+  startCamera();
 });
 
 function waitForFaceApi() {
-  return new Promise(resolve => { const check = () => { if (window.faceapi) resolve(); else setTimeout(check, 100); }; check(); });
+  return new Promise(resolve => { const c = () => { if (window.faceapi) resolve(); else setTimeout(c, 100); }; c(); });
 }
-function setLoadingText(t) { document.getElementById('loadingText').textContent = t; }
 
 function startClock(tId, dId) {
   const update = () => {
@@ -283,62 +234,6 @@ function startClock(tId, dId) {
     if (dEl) { const days=['日','月','火','水','木','金','土']; dEl.textContent = `${jst.getFullYear()}年${jst.getMonth()+1}月${jst.getDate()}日（${days[jst.getDay()]}）`; }
   };
   update(); setInterval(update, 1000);
-}
-
-async function startLoginCamera() {
-  const st = document.getElementById('loginFaceStatus');
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
-    loginCameraStream = stream;
-    const v = document.getElementById('loginVideo');
-    v.srcObject = stream; await v.play();
-    await loadParentDescriptors();
-    if (!labeledDescriptors.length) { st.textContent = '📷 顔を向けてください（保護者未登録）'; return; }
-    st.textContent = '📷 顔を向けるとログインできます';
-    startLoginDetection();
-  } catch(e) { st.textContent = 'カメラを利用できません'; }
-}
-
-function startLoginDetection() {
-  const v = document.getElementById('loginVideo'), st = document.getElementById('loginFaceStatus');
-  loginDetectionTimer = setInterval(async () => {
-    if (!v.videoWidth || !loginCameraStream) return;
-    let det; try { det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) { return; }
-    if (!det) { st.textContent = '📷 顔を向けるとログインできます'; st.className = 'login-face-status'; return; }
-    let best = null, bd = Infinity;
-    for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
-    if (bd < 0.5 && best) { st.textContent = `✓ ${best.name}さんを認証しました`; st.className = 'login-face-status ok'; stopLoginCamera(); setTimeout(doLogin, 600); }
-    else { st.textContent = '認識中...'; st.className = 'login-face-status'; }
-  }, 800);
-}
-
-function stopLoginCamera() {
-  if (loginDetectionTimer) { clearInterval(loginDetectionTimer); loginDetectionTimer = null; }
-  if (loginCameraStream) { loginCameraStream.getTracks().forEach(t => t.stop()); loginCameraStream = null; }
-}
-
-function doLogin() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('mainApp').style.display = 'block';
-  startClock('clockTime', 'clockDate');
-  startCamera();
-}
-
-function login() {
-  const pw = document.getElementById('passwordInput').value;
-  if (pw === STAFF_PASSWORD) { stopLoginCamera(); doLogin(); }
-  else { document.getElementById('loginError').style.display = 'block'; document.getElementById('passwordInput').value = ''; document.getElementById('passwordInput').focus(); }
-}
-
-function logout() {
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-  if (detectionTimer) { clearInterval(detectionTimer); detectionTimer = null; }
-  currentParent = null;
-  document.getElementById('mainApp').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('passwordInput').value = '';
-  document.getElementById('loginError').style.display = 'none';
-  closeSidebar(); startLoginCamera();
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
@@ -367,7 +262,7 @@ function startDetection() {
     const det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor();
     if (!det) { if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile(); if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting'); return; }
     lastFaceTime = Date.now();
-    if (!labeledDescriptors.length) { setStatus('保護者が未登録です（管理者ページから登録してください）', ''); return; }
+    if (!labeledDescriptors.length) { setStatus('保護者が未登録です', ''); return; }
     let best = null, bd = Infinity;
     for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
     if (bd < 0.5) { if (!currentParent || currentParent.id !== best.id) showProfile(best); }
