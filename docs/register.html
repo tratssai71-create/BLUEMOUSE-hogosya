@@ -229,6 +229,15 @@ const firebaseConfig = {
 
 let db, videoStream = null, faceDescriptor = null, photoBase64 = null;
 
+// ?noauth=1 のときは認証スキップ
+if (new URLSearchParams(location.search).get('noauth') === '1') {
+  window.addEventListener('load', () => {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    initApp();
+  });
+}
+
 function checkAuth() {
   const pw = document.getElementById('authInput').value;
   if (pw === ADMIN_PASSWORD) {
