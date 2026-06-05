@@ -8,153 +8,155 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.14/dist/face-api.js"></script>
   <style>
+    :root {
+      --bm-coral: #f2906c;
+      --bm-coral-dark: #e87e59;
+      --bm-teal: #5ec1c6;
+      --bm-yellow: #f5d24a;
+      --bm-cream: #fffdf7;
+      --bm-ink: 40, 30, 24;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0faf4; color: #1e293b; min-height: 100vh; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
     /* ===== LOGIN ===== */
     #loginScreen {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f2a1a 0%, #1a4a2e 100%);
+      display: flex; align-items: center; justify-content: center; min-height: 100vh;
+      background: linear-gradient(135deg, rgba(var(--bm-ink),1) 0%, #3d2518 100%);
     }
     .login-box {
-      background: rgba(255,255,255,0.06); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.13); border-radius: 24px;
       padding: 48px 40px; width: 380px; text-align: center;
     }
     .login-logo { margin-bottom: 16px; }
     .login-logo img { width: 160px; height: auto; }
-    .login-subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 32px; }
-    .login-time { font-size: 42px; font-weight: 200; color: #f8fafc; letter-spacing: 3px; margin-bottom: 8px; }
-    .login-date { font-size: 14px; color: #94a3b8; margin-bottom: 32px; }
-    .login-face-section { margin-bottom: 16px; border-radius: 16px; overflow: hidden; background: #1e293b; position: relative; }
+    .login-subtitle { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 28px; }
+    .login-time { font-size: 44px; font-weight: 200; color: var(--bm-cream); letter-spacing: 3px; margin-bottom: 6px; }
+    .login-date { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
+
+    .login-face-section { margin-bottom: 16px; border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.3); position: relative; }
     #loginVideo { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; border-radius: 16px; }
-    .login-face-status {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.65); color: #94a3b8; font-size: 12px; font-weight: 500;
-      padding: 8px 12px; text-align: center; transition: color 0.3s;
-    }
-    .login-face-status.ok { color: #34d399; }
-    .login-divider { display: flex; align-items: center; gap: 10px; color: #475569; font-size: 12px; margin: 14px 0; }
+    .login-face-status { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 500; padding: 8px 12px; text-align: center; transition: color 0.3s; }
+    .login-face-status.ok { color: var(--bm-teal); }
+
+    .login-divider { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.25); font-size: 12px; margin: 14px 0; }
     .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
     .login-input {
       width: 100%; padding: 14px 18px; border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
-      color: #f8fafc; font-size: 16px; margin-bottom: 16px; text-align: center;
+      color: var(--bm-cream); font-size: 16px; margin-bottom: 16px; text-align: center;
       letter-spacing: 4px; outline: none; transition: border-color 0.2s;
     }
-    .login-input:focus { border-color: #34d399; }
-    .login-input::placeholder { letter-spacing: 1px; color: #64748b; }
+    .login-input:focus { border-color: var(--bm-coral); }
+    .login-input::placeholder { letter-spacing: 1px; color: rgba(255,255,255,0.25); }
     .login-btn {
       width: 100%; padding: 14px; border-radius: 12px;
-      background: linear-gradient(135deg, #16a34a, #15803d);
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
       color: white; font-size: 16px; font-weight: 600; border: none; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(22,163,74,0.4); transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(242,144,108,0.4); transition: transform 0.1s, box-shadow 0.2s;
     }
-    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,0.5); }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(242,144,108,0.5); }
     .login-error { color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
 
     /* ===== MAIN ===== */
     #mainApp { display: none; min-height: 100vh; }
 
-    /* Sidebar */
     #sidebar {
       position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
-      background: rgba(10,30,18,0.97); backdrop-filter: blur(20px);
+      background: rgba(var(--bm-ink), 0.97); backdrop-filter: blur(20px);
       border-right: 1px solid rgba(255,255,255,0.08);
       padding: 24px 0; transform: translateX(-220px); transition: transform 0.3s ease; z-index: 100;
     }
     #sidebar.open { transform: translateX(0); }
     .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .sidebar-logo img { width: 110px; height: auto; margin-bottom: 4px; }
-    .sidebar-logo .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .sidebar-logo img { width: 110px; height: auto; }
+    .sidebar-logo .sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; }
     .sidebar-nav { padding: 16px 0; }
-    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; transition: background 0.2s, color 0.2s; cursor: pointer; }
-    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: #f8fafc; }
-    .sidebar-link .icon { font-size: 18px; }
+    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: background 0.2s, color 0.2s; cursor: pointer; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
+    .sidebar-link .icon { font-size: 17px; }
     #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
     #sidebarOverlay.show { display: block; }
 
-    /* Topbar */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; height: 56px;
-      background: #0a1e12; border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(var(--bm-ink), 0.97);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       display: flex; align-items: center; padding: 0 16px; z-index: 50;
     }
-    .menu-btn { background: none; border: none; color: #f8fafc; font-size: 22px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s; }
+    .menu-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s; }
     .menu-btn:hover { background: rgba(255,255,255,0.1); }
-    .topbar-logo { height: 36px; width: auto; margin-left: 12px; display: block; }
+    .topbar-logo { height: 34px; width: auto; margin-left: 12px; display: block; }
     .topbar a { display: flex; align-items: center; line-height: 0; }
 
     /* Clock Screen */
-    #clockScreen { padding-top: 56px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: #f0faf4; }
+    #clockScreen { padding-top: 56px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
     .clock-time-section { text-align: center; padding: 32px 20px 24px; }
-    .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: #0f2a1a; }
-    .clock-date { font-size: 15px; color: #64748b; margin-top: 6px; }
+    .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: rgb(var(--bm-ink)); }
+    .clock-date { font-size: 14px; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
 
-    /* Camera */
-    .camera-wrapper { position: relative; width: min(400px, 90vw); border-radius: 20px; overflow: hidden; background: #1e293b; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+    .camera-wrapper { position: relative; width: min(400px, 90vw); border-radius: 20px; overflow: hidden; background: rgba(var(--bm-ink),1); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
     #video { width: 100%; display: block; border-radius: 18px; }
     #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: #94a3b8; background: rgba(0,0,0,0.4); }
-    .face-detecting { color: #fbbf24; }
-    .face-recognized { color: #34d399; }
+    .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.45); }
+    .face-detecting { color: var(--bm-yellow); }
+    .face-recognized { color: var(--bm-teal); }
 
-    /* Profile Card */
     #profileCard {
       display: none; width: min(400px, 90vw); background: white;
-      border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-top: 16px;
+      border: 1.5px solid rgba(var(--bm-ink),0.08); border-radius: 18px; padding: 16px; margin-top: 16px;
       flex-direction: row; align-items: center; gap: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08); animation: slideIn 0.3s ease;
+      box-shadow: 0 2px 16px rgba(var(--bm-ink),0.08); animation: slideIn 0.3s ease;
     }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    #parentPhotoEl { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #16a34a; flex-shrink: 0; }
+    #parentPhotoEl { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2.5px solid var(--bm-coral); flex-shrink: 0; }
     .profile-info { flex: 1; }
-    .profile-name { font-size: 18px; font-weight: 700; color: #0f172a; }
-    .profile-child { font-size: 13px; color: #64748b; margin-top: 2px; }
-    .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+    .profile-name { font-size: 18px; font-weight: 700; color: rgb(var(--bm-ink)); }
+    .profile-child { font-size: 13px; color: rgba(var(--bm-ink),0.5); margin-top: 2px; }
+    .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.35); color: #3aa8ae; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
 
-    /* Action Button */
-    .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; padding-bottom: 32px; }
+    .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; padding-bottom: 40px; }
     .btn-pickup {
-      flex: 1; padding: 22px; border-radius: 14px; border: none;
-      font-size: 22px; font-weight: 700; cursor: pointer;
+      flex: 1; padding: 22px; border-radius: 16px; border: none;
+      font-size: 20px; font-weight: 700; cursor: pointer; letter-spacing: 0.03em;
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; box-shadow: 0 4px 20px rgba(242,144,108,0.38);
       transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
-      background: linear-gradient(135deg, #16a34a, #15803d);
-      color: white; box-shadow: 0 2px 16px rgba(22,163,74,0.35);
     }
-    .btn-pickup:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
-    .btn-pickup:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(22,163,74,0.45); }
+    .btn-pickup:disabled { opacity: 0.22; cursor: not-allowed; transform: none !important; }
+    .btn-pickup:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(242,144,108,0.48); }
     .btn-pickup:not(:disabled):active { transform: translateY(0); }
 
     /* Thanks Screen */
     #thanksScreen {
       display: none; min-height: 100vh; align-items: center; justify-content: center;
       flex-direction: column; text-align: center; padding: 40px 20px;
-      background: #071a10; position: relative; overflow: hidden;
+      background: rgb(var(--bm-ink)); position: relative; overflow: hidden;
     }
     #thanksScreen::before {
       content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 40%, rgba(16,185,129,0.25) 0%, transparent 65%);
+      background: radial-gradient(ellipse at 50% 38%, rgba(94,193,198,0.22) 0%, transparent 62%);
       pointer-events: none;
     }
-    .thanks-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; padding: 6px 18px; border-radius: 999px; margin-bottom: 32px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; }
+    .thanks-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 18px; border-radius: 999px; margin-bottom: 32px; background: rgba(94,193,198,0.15); border: 1px solid rgba(94,193,198,0.4); color: var(--bm-teal); text-transform: uppercase; }
     .thanks-photo-wrap { position: relative; width: 148px; height: 148px; margin: 0 auto 28px; }
     .thanks-photo { width: 136px; height: 136px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.15); position: absolute; top: 6px; left: 6px; }
-    .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(52,211,153,0.7); animation: ring-expand 2s ease-out infinite; }
-    @keyframes ring-expand { 0% { transform: scale(0.88); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.12); opacity: 0; } }
-    .thanks-name { font-size: 32px; font-weight: 800; color: #f8fafc; margin-bottom: 6px; }
-    .thanks-child { font-size: 16px; color: rgba(255,255,255,0.55); margin-bottom: 10px; font-weight: 500; }
-    .thanks-message { font-size: 17px; color: rgba(255,255,255,0.6); margin-bottom: 28px; font-weight: 500; }
-    .thanks-time { font-size: 13px; color: rgba(255,255,255,0.3); letter-spacing: 0.5px; }
+    .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(94,193,198,0.65); animation: ring-expand 2s ease-out infinite; }
+    @keyframes ring-expand { 0%{transform:scale(.88);opacity:0} 30%{opacity:1} 100%{transform:scale(1.12);opacity:0} }
+    .thanks-name { font-size: 32px; font-weight: 800; color: var(--bm-cream); margin-bottom: 6px; }
+    .thanks-child { font-size: 15px; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
+    .thanks-message { font-size: 17px; color: rgba(255,255,255,0.55); margin-bottom: 28px; font-weight: 500; }
+    .thanks-time { font-size: 13px; color: rgba(255,255,255,0.28); letter-spacing: 0.5px; }
     .thanks-bar { width: 180px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 36px; overflow: hidden; }
-    .thanks-bar-fill { height: 100%; width: 0%; background: #34d399; border-radius: 2px; transition: width 5s linear; }
+    .thanks-bar-fill { height: 100%; width: 0%; background: var(--bm-teal); border-radius: 2px; transition: width 5s linear; }
 
     /* Loading */
-    #loadingOverlay { position: fixed; inset: 0; background: #0f2a1a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 999; }
-    .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #34d399; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    #loadingOverlay { position: fixed; inset: 0; background: rgb(var(--bm-ink)); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 999; }
+    .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--bm-coral); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 14px; color: #94a3b8; }
+    .loading-text { font-size: 14px; color: rgba(255,255,255,0.4); }
   </style>
 </head>
 <body>
@@ -164,7 +166,6 @@
   <div class="loading-text" id="loadingText">起動中...</div>
 </div>
 
-<!-- ログイン画面 -->
 <div id="loginScreen" style="display:none">
   <div class="login-box">
     <div class="login-logo"><img src="logo.webp" alt="BLUE MOUSE"></div>
@@ -182,7 +183,6 @@
   </div>
 </div>
 
-<!-- メインアプリ -->
 <div id="mainApp">
   <div id="sidebarOverlay" onclick="closeSidebar()"></div>
   <div id="sidebar">
@@ -201,7 +201,6 @@
     <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo"></a>
   </div>
 
-  <!-- 認証画面 -->
   <div id="clockScreen">
     <div class="clock-time-section">
       <div class="clock-time" id="clockTime">--:--:--</div>
@@ -225,7 +224,6 @@
     </div>
   </div>
 
-  <!-- サンクス画面 -->
   <div id="thanksScreen">
     <div class="thanks-badge">✓ &nbsp;お迎え記録完了</div>
     <div class="thanks-photo-wrap">
@@ -252,15 +250,7 @@ const firebaseConfig = {
   appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
 };
 
-let db;
-let currentParent = null;
-let detectionActive = false;
-let labeledDescriptors = [];
-let detectionTimer = null;
-let videoStream = null;
-let lastFaceTime = 0;
-let loginCameraStream = null;
-let loginDetectionTimer = null;
+let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, videoStream = null, lastFaceTime = 0, loginCameraStream = null, loginDetectionTimer = null;
 
 window.addEventListener('load', async () => {
   firebase.initializeApp(firebaseConfig);
@@ -274,72 +264,52 @@ window.addEventListener('load', async () => {
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
     ]);
-  } catch(e) { console.error('モデル読み込みエラー:', e); }
+  } catch(e) { console.error(e); }
   document.getElementById('loadingOverlay').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   startLoginCamera();
 });
 
 function waitForFaceApi() {
-  return new Promise(resolve => {
-    const check = () => { if (window.faceapi) resolve(); else setTimeout(check, 100); };
-    check();
-  });
+  return new Promise(resolve => { const check = () => { if (window.faceapi) resolve(); else setTimeout(check, 100); }; check(); });
 }
-function setLoadingText(text) { document.getElementById('loadingText').textContent = text; }
+function setLoadingText(t) { document.getElementById('loadingText').textContent = t; }
 
-function startClock(timeId, dateId) {
+function startClock(tId, dId) {
   const update = () => {
     const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-    const h = String(jst.getHours()).padStart(2,'0');
-    const m = String(jst.getMinutes()).padStart(2,'0');
-    const s = String(jst.getSeconds()).padStart(2,'0');
-    const timeEl = document.getElementById(timeId);
-    const dateEl = document.getElementById(dateId);
-    if (timeEl) timeEl.textContent = `${h}:${m}:${s}`;
-    if (dateEl) {
-      const days = ['日','月','火','水','木','金','土'];
-      dateEl.textContent = `${jst.getFullYear()}年${jst.getMonth()+1}月${jst.getDate()}日（${days[jst.getDay()]}）`;
-    }
+    const pad = n => String(n).padStart(2,'0');
+    const tEl = document.getElementById(tId), dEl = document.getElementById(dId);
+    if (tEl) tEl.textContent = `${pad(jst.getHours())}:${pad(jst.getMinutes())}:${pad(jst.getSeconds())}`;
+    if (dEl) { const days=['日','月','火','水','木','金','土']; dEl.textContent = `${jst.getFullYear()}年${jst.getMonth()+1}月${jst.getDate()}日（${days[jst.getDay()]}）`; }
   };
   update(); setInterval(update, 1000);
 }
 
 async function startLoginCamera() {
-  const statusEl = document.getElementById('loginFaceStatus');
+  const st = document.getElementById('loginFaceStatus');
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
     loginCameraStream = stream;
-    const video = document.getElementById('loginVideo');
-    video.srcObject = stream;
-    await video.play();
+    const v = document.getElementById('loginVideo');
+    v.srcObject = stream; await v.play();
     await loadParentDescriptors();
-    if (labeledDescriptors.length === 0) { statusEl.textContent = '📷 顔を向けてください（保護者未登録）'; return; }
-    statusEl.textContent = '📷 顔を向けるとログインできます';
+    if (!labeledDescriptors.length) { st.textContent = '📷 顔を向けてください（保護者未登録）'; return; }
+    st.textContent = '📷 顔を向けるとログインできます';
     startLoginDetection();
-  } catch(e) { statusEl.textContent = 'カメラを利用できません'; }
+  } catch(e) { st.textContent = 'カメラを利用できません'; }
 }
 
 function startLoginDetection() {
-  const video = document.getElementById('loginVideo');
-  const statusEl = document.getElementById('loginFaceStatus');
+  const v = document.getElementById('loginVideo'), st = document.getElementById('loginFaceStatus');
   loginDetectionTimer = setInterval(async () => {
-    if (!video.videoWidth || !loginCameraStream) return;
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-    let detection;
-    try { detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor(); } catch(e) { return; }
-    if (!detection) { statusEl.textContent = '📷 顔を向けるとログインできます'; statusEl.className = 'login-face-status'; return; }
-    let bestMatch = null, bestDistance = Infinity;
-    for (const p of labeledDescriptors) {
-      const dist = faceapi.euclideanDistance(detection.descriptor, p.descriptor);
-      if (dist < bestDistance) { bestDistance = dist; bestMatch = p; }
-    }
-    if (bestDistance < 0.5 && bestMatch) {
-      statusEl.textContent = `✓ ${bestMatch.name}さんを認証しました`;
-      statusEl.className = 'login-face-status ok';
-      stopLoginCamera();
-      setTimeout(() => doLogin(), 600);
-    } else { statusEl.textContent = '認識中...'; statusEl.className = 'login-face-status'; }
+    if (!v.videoWidth || !loginCameraStream) return;
+    let det; try { det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) { return; }
+    if (!det) { st.textContent = '📷 顔を向けるとログインできます'; st.className = 'login-face-status'; return; }
+    let best = null, bd = Infinity;
+    for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
+    if (bd < 0.5 && best) { st.textContent = `✓ ${best.name}さんを認証しました`; st.className = 'login-face-status ok'; stopLoginCamera(); setTimeout(doLogin, 600); }
+    else { st.textContent = '認識中...'; st.className = 'login-face-status'; }
   }, 800);
 }
 
@@ -358,11 +328,7 @@ function doLogin() {
 function login() {
   const pw = document.getElementById('passwordInput').value;
   if (pw === STAFF_PASSWORD) { stopLoginCamera(); doLogin(); }
-  else {
-    document.getElementById('loginError').style.display = 'block';
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('passwordInput').focus();
-  }
+  else { document.getElementById('loginError').style.display = 'block'; document.getElementById('passwordInput').value = ''; document.getElementById('passwordInput').focus(); }
 }
 
 function logout() {
@@ -373,8 +339,7 @@ function logout() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('passwordInput').value = '';
   document.getElementById('loginError').style.display = 'none';
-  closeSidebar();
-  startLoginCamera();
+  closeSidebar(); startLoginCamera();
 }
 
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
@@ -384,50 +349,30 @@ async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
     videoStream = stream;
-    const video = document.getElementById('video');
-    video.srcObject = stream;
-    await video.play();
+    const v = document.getElementById('video'); v.srcObject = stream; await v.play();
     setStatus('保護者の顔をカメラに向けてください', 'detecting');
-    await loadParentDescriptors();
-    startDetection();
+    await loadParentDescriptors(); startDetection();
   } catch(e) { setStatus('カメラにアクセスできません', ''); }
 }
 
 async function loadParentDescriptors() {
-  const snapshot = await db.collection('parents').get();
+  const snap = await db.collection('parents').get();
   labeledDescriptors = [];
-  snapshot.forEach(doc => {
-    const d = doc.data();
-    if (d.faceDescriptor && d.faceDescriptor.length > 0) {
-      labeledDescriptors.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '', descriptor: new Float32Array(d.faceDescriptor) });
-    }
-  });
+  snap.forEach(doc => { const d = doc.data(); if (d.faceDescriptor?.length) labeledDescriptors.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '', descriptor: new Float32Array(d.faceDescriptor) }); });
 }
 
 function startDetection() {
-  const video = document.getElementById('video');
+  const v = document.getElementById('video');
   detectionTimer = setInterval(async () => {
-    if (!video.videoWidth) return;
-    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-    const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
-    if (!detection) {
-      if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile();
-      if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting');
-      return;
-    }
+    if (!v.videoWidth) return;
+    const det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor();
+    if (!det) { if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile(); if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting'); return; }
     lastFaceTime = Date.now();
-    if (labeledDescriptors.length === 0) { setStatus('保護者が未登録です（管理者ページから登録してください）', ''); return; }
-    let bestMatch = null, bestDistance = Infinity;
-    for (const p of labeledDescriptors) {
-      const dist = faceapi.euclideanDistance(detection.descriptor, p.descriptor);
-      if (dist < bestDistance) { bestDistance = dist; bestMatch = p; }
-    }
-    if (bestDistance < 0.5) {
-      if (!currentParent || currentParent.id !== bestMatch.id) showProfile(bestMatch);
-    } else {
-      if (currentParent) hideProfile();
-      setStatus('登録されていない方です', 'detecting');
-    }
+    if (!labeledDescriptors.length) { setStatus('保護者が未登録です（管理者ページから登録してください）', ''); return; }
+    let best = null, bd = Infinity;
+    for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
+    if (bd < 0.5) { if (!currentParent || currentParent.id !== best.id) showProfile(best); }
+    else { if (currentParent) hideProfile(); setStatus('登録されていない方です', 'detecting'); }
   }, 600);
 }
 
@@ -455,8 +400,8 @@ function hideProfile() {
 }
 
 function generateAvatar(name) {
-  const char = name ? name.charAt(0) : '?';
-  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23334155"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23f8fafc">${encodeURIComponent(char)}</text></svg>`;
+  const c = name ? name.charAt(0) : '?';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
 }
 
 async function recordPickup() {
@@ -464,49 +409,38 @@ async function recordPickup() {
   const parent = { ...currentParent };
   document.getElementById('btnPickup').disabled = true;
   const photo = capturePhoto();
-  const now = new Date();
-  const jst = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-  await db.collection('pickupRecords').add({
-    parentId: parent.id, parentName: parent.name, childName: parent.childName || '',
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo
-  });
+  const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
   showThanks(parent, jst);
 }
 
 function capturePhoto() {
-  const video = document.getElementById('video');
-  const canvas = document.createElement('canvas');
-  const W = 320, H = 240;
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  const scale = Math.min(W / video.videoWidth, H / video.videoHeight);
-  const w = video.videoWidth * scale, h = video.videoHeight * scale;
-  ctx.drawImage(video, (W-w)/2, (H-h)/2, w, h);
-  return canvas.toDataURL('image/jpeg', 0.4);
+  const v = document.getElementById('video');
+  const c = document.createElement('canvas'); const W=320, H=240; c.width=W; c.height=H;
+  const ctx = c.getContext('2d'), s = Math.min(W/v.videoWidth, H/v.videoHeight), w=v.videoWidth*s, h=v.videoHeight*s;
+  ctx.drawImage(v, (W-w)/2, (H-h)/2, w, h);
+  return c.toDataURL('image/jpeg', 0.4);
 }
 
 function showThanks(parent, time) {
   if (detectionTimer) { clearInterval(detectionTimer); detectionTimer = null; }
   document.getElementById('clockScreen').style.display = 'none';
-  const h = String(time.getHours()).padStart(2,'0');
-  const m = String(time.getMinutes()).padStart(2,'0');
+  const pad = n => String(n).padStart(2,'0');
   document.getElementById('thanksName').textContent = parent.name + ' さん';
   document.getElementById('thanksChild').textContent = parent.childName ? `お子様：${parent.childName}` : '';
   document.getElementById('thanksPhoto').src = parent.photo || generateAvatar(parent.name);
-  document.getElementById('thanksTime').textContent = `お迎え時刻：${h}:${m}`;
+  document.getElementById('thanksTime').textContent = `お迎え時刻：${pad(time.getHours())}:${pad(time.getMinutes())}`;
   document.getElementById('thanksScreen').style.display = 'flex';
   setTimeout(() => document.getElementById('thanksBar').style.width = '100%', 100);
-  setTimeout(() => returnToClock(), 5000);
+  setTimeout(returnToClock, 5000);
 }
 
 async function returnToClock() {
   document.getElementById('thanksScreen').style.display = 'none';
   document.getElementById('thanksBar').style.width = '0%';
   document.getElementById('clockScreen').style.display = 'flex';
-  hideProfile();
-  setStatus('保護者の顔をカメラに向けてください', 'detecting');
-  await loadParentDescriptors();
-  startDetection();
+  hideProfile(); setStatus('保護者の顔をカメラに向けてください', 'detecting');
+  await loadParentDescriptors(); startDetection();
 }
 </script>
 </body>

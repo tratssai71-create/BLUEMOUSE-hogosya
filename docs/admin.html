@@ -7,98 +7,150 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
+    :root {
+      --bm-coral: #f2906c;
+      --bm-coral-dark: #e87e59;
+      --bm-teal: #5ec1c6;
+      --bm-yellow: #f5d24a;
+      --bm-cream: #fffdf7;
+      --bm-ink: 40, 30, 24;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0faf4; color: #1e293b; min-height: 100vh; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
     /* LOGIN */
-    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0a1e12 0%, #1a4a2e 100%); }
-    .login-box { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 48px 40px; width: 380px; text-align: center; }
-    .login-logo img { width: 160px; height: auto; margin-bottom: 16px; }
-    .login-subtitle { font-size: 13px; color: #94a3b8; margin: 6px 0 32px; }
-    .login-input { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #f8fafc; font-size: 16px; margin-bottom: 16px; text-align: center; letter-spacing: 4px; outline: none; }
-    .login-input:focus { border-color: #34d399; }
-    .login-input::placeholder { letter-spacing: 1px; color: #64748b; }
-    .login-btn { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; font-size: 16px; font-weight: 600; border: none; cursor: pointer; }
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center; min-height: 100vh;
+      background: linear-gradient(135deg, rgb(var(--bm-ink)) 0%, #3d2518 100%);
+    }
+    .login-box {
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+      padding: 48px 40px; width: 380px; text-align: center;
+    }
+    .login-box img { width: 160px; height: auto; margin-bottom: 16px; }
+    .login-subtitle { font-size: 13px; color: rgba(255,255,255,0.38); margin: 6px 0 28px; }
+    .login-input {
+      width: 100%; padding: 14px 18px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
+      color: var(--bm-cream); font-size: 16px; margin-bottom: 16px;
+      text-align: center; letter-spacing: 4px; outline: none; transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: var(--bm-coral); }
+    .login-input::placeholder { letter-spacing: 1px; color: rgba(255,255,255,0.25); }
+    .login-btn {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; font-size: 16px; font-weight: 600; border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(242,144,108,0.38);
+    }
     .login-error { color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
 
     /* HEADER */
     #mainApp { display: none; }
-    .header { background: #0a1e12; color: white; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .header {
+      background: rgb(var(--bm-ink)); color: white; padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 12px rgba(var(--bm-ink),0.3);
+    }
     .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-logo img { height: 44px; width: auto; }
-    .header-title { font-size: 15px; color: #94a3b8; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .btn-add { background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }
-    .btn-logout { background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .header-logo img { height: 42px; width: auto; }
+    .header-title { font-size: 14px; color: rgba(255,255,255,0.38); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .btn-add {
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; border: none; padding: 8px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+      box-shadow: 0 2px 10px rgba(242,144,108,0.3);
+    }
+    .btn-logout {
+      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px;
+      border-radius: 8px; font-size: 13px; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.12); color: white; }
 
     /* CONTENT */
     .content { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
-    .section-title { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+    .section-title { font-size: 12px; font-weight: 700; color: rgba(var(--bm-ink),0.38); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
 
     /* PARENT GRID */
     .parent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-    .parent-card { background: white; border-radius: 16px; padding: 24px 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 2px solid transparent; transition: transform 0.2s, box-shadow 0.2s; }
-    .parent-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: #16a34a; }
-    .parent-card-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; margin: 0 auto 12px; display: block; }
-    .parent-card-name { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
-    .parent-card-child { font-size: 12px; color: #64748b; margin-bottom: 12px; }
-    .btn-delete-parent { background: none; border: none; color: #cbd5e1; font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; margin-top: 4px; }
+    .parent-card {
+      background: white; border-radius: 18px; padding: 24px 16px; text-align: center;
+      box-shadow: 0 1px 3px rgba(var(--bm-ink),0.07); border: 2px solid transparent;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .parent-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(var(--bm-ink),0.1); border-color: var(--bm-coral); }
+    .parent-card-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(var(--bm-ink),0.08); margin: 0 auto 12px; display: block; }
+    .parent-card-name { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); margin-bottom: 4px; }
+    .parent-card-child { font-size: 12px; color: rgba(var(--bm-ink),0.45); margin-bottom: 12px; }
+    .btn-delete-parent { background: none; border: none; color: rgba(var(--bm-ink),0.2); font-size: 13px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: color 0.2s; }
     .btn-delete-parent:hover { color: #ef4444; }
-    .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+    .empty-state { text-align: center; padding: 60px 20px; color: rgba(var(--bm-ink),0.35); }
     .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
 
     /* WEEKLY SUMMARY */
-    .summary-section { margin-top: 48px; }
-    .summary-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .summary-section-title { font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; }
+    .summary-section { margin-top: 52px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .section-header-title { font-size: 13px; font-weight: 700; color: rgb(var(--bm-ink)); }
     .week-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-    .week-label { font-size: 15px; font-weight: 700; color: #1e293b; min-width: 150px; text-align: center; }
-    .week-nav-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; width: 32px; height: 32px; font-size: 14px; cursor: pointer; color: #475569; transition: background 0.2s; }
-    .week-nav-btn:hover { background: #e2e8f0; }
-    .week-today-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; cursor: pointer; font-weight: 600; }
-    .week-today-btn:hover { background: #dcfce7; }
-    .table-wrap { overflow-x: auto; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .week-label { font-size: 14px; font-weight: 700; color: rgb(var(--bm-ink)); min-width: 150px; text-align: center; }
+    .week-btn {
+      background: white; border: 1.5px solid rgba(var(--bm-ink),0.1);
+      border-radius: 8px; width: 32px; height: 32px; font-size: 13px; cursor: pointer;
+      color: rgba(var(--bm-ink),0.5); transition: background 0.2s, border-color 0.2s;
+    }
+    .week-btn:hover { background: rgba(var(--bm-ink),0.05); border-color: rgba(var(--bm-ink),0.2); }
+    .week-today-btn {
+      font-size: 12px; padding: 6px 12px; border-radius: 6px;
+      background: rgba(242,144,108,0.1); border: 1px solid rgba(242,144,108,0.3);
+      color: var(--bm-coral-dark); cursor: pointer; font-weight: 600; transition: background 0.2s;
+    }
+    .week-today-btn:hover { background: rgba(242,144,108,0.18); }
+
+    .table-wrap { overflow-x: auto; border-radius: 16px; box-shadow: 0 1px 4px rgba(var(--bm-ink),0.07); }
     .summary-table { width: 100%; border-collapse: collapse; background: white; min-width: 560px; }
-    .summary-table thead tr { background: #f8fafc; }
-    .th-name { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; color: #64748b; border-bottom: 2px solid #e2e8f0; white-space: nowrap; min-width: 130px; position: sticky; left: 0; background: #f8fafc; z-index: 2; }
-    .th-day { padding: 10px 6px; font-size: 11px; font-weight: 700; color: #64748b; border-bottom: 2px solid #e2e8f0; text-align: center; white-space: nowrap; min-width: 72px; }
-    .th-day.today { background: #f0fdf4; color: #16a34a; }
-    .th-day.sun { color: #ef4444; }
+    .summary-table thead tr { background: rgba(var(--bm-ink),0.025); }
+    .th-name { text-align: left; padding: 12px 16px; font-size: 11px; font-weight: 700; color: rgba(var(--bm-ink),0.4); border-bottom: 1.5px solid rgba(var(--bm-ink),0.07); white-space: nowrap; min-width: 140px; position: sticky; left: 0; background: rgba(var(--bm-ink),0.025); z-index: 2; }
+    .th-day { padding: 10px 6px; font-size: 11px; font-weight: 700; color: rgba(var(--bm-ink),0.4); border-bottom: 1.5px solid rgba(var(--bm-ink),0.07); text-align: center; white-space: nowrap; min-width: 72px; }
+    .th-day.today { background: rgba(242,144,108,0.07); color: var(--bm-coral-dark); }
+    .th-day.sun { color: #e05555; }
     .th-day.sat { color: #3b82f6; }
-    .td-name { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; position: sticky; left: 0; background: white; z-index: 1; }
+    .td-name { padding: 10px 16px; border-bottom: 1px solid rgba(var(--bm-ink),0.05); position: sticky; left: 0; background: white; z-index: 1; }
     .staff-inner { display: flex; align-items: center; gap: 10px; }
-    .staff-photo-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    .staff-name-sm { font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; }
-    .td-day { padding: 8px 4px; text-align: center; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-    .td-day.today { background: #f0fdf4; }
-    .pickup-badge { font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 3px 8px; border-radius: 6px; display: inline-block; white-space: nowrap; }
-    .empty-cell { color: #e2e8f0; font-size: 16px; }
-    .summary-table tbody tr:hover .td-name, .summary-table tbody tr:hover .td-day { background: #fafafa; }
-    .summary-table tbody tr:hover .td-day.today { background: #e8fdf0; }
+    .staff-photo-sm { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .staff-name-sm { font-size: 13px; font-weight: 600; color: rgb(var(--bm-ink)); white-space: nowrap; }
+    .staff-child-sm { font-size: 11px; color: rgba(var(--bm-ink),0.4); }
+    .td-day { padding: 8px 4px; text-align: center; border-bottom: 1px solid rgba(var(--bm-ink),0.05); vertical-align: middle; }
+    .td-day.today { background: rgba(242,144,108,0.04); }
+    .pickup-badge { font-size: 11px; font-weight: 700; color: var(--bm-coral-dark); background: rgba(242,144,108,0.12); border: 1px solid rgba(242,144,108,0.25); padding: 3px 8px; border-radius: 6px; display: inline-block; white-space: nowrap; }
+    .empty-cell { color: rgba(var(--bm-ink),0.15); font-size: 14px; }
+    .summary-table tbody tr:hover .td-name,
+    .summary-table tbody tr:hover .td-day { background: rgba(var(--bm-ink),0.02); }
 
     /* HISTORY */
-    .history-section { margin-top: 48px; }
-    .history-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .history-title { font-size: 13px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; }
+    .history-section { margin-top: 52px; margin-bottom: 52px; }
     .history-filter { display: flex; gap: 8px; margin-left: auto; }
-    .filter-input { padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #1e293b; outline: none; background: white; }
-    .filter-input:focus { border-color: #16a34a; }
-    .history-table-wrap { border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .filter-input { padding: 7px 12px; border: 1.5px solid rgba(var(--bm-ink),0.1); border-radius: 8px; font-size: 13px; color: rgb(var(--bm-ink)); outline: none; background: white; transition: border-color 0.2s; }
+    .filter-input:focus { border-color: var(--bm-coral); }
+    .history-table-wrap { border-radius: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(var(--bm-ink),0.07); }
     .history-table { width: 100%; border-collapse: collapse; background: white; }
-    .history-table th { background: #f8fafc; padding: 12px 16px; font-size: 11px; font-weight: 700; color: #64748b; text-align: left; border-bottom: 2px solid #e2e8f0; }
-    .history-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13px; vertical-align: middle; }
-    .history-table tr:hover td { background: #fafafa; }
-    .rec-photo { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
-    .rec-parent { font-weight: 700; color: #1e293b; }
-    .rec-child { color: #64748b; font-size: 12px; margin-top: 2px; }
-    .rec-time { font-size: 13px; color: #1e293b; }
-    .rec-date { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-    .btn-rec-delete { background: none; border: none; color: #cbd5e1; font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .history-table th { background: rgba(var(--bm-ink),0.025); padding: 12px 16px; font-size: 11px; font-weight: 700; color: rgba(var(--bm-ink),0.4); text-align: left; border-bottom: 1.5px solid rgba(var(--bm-ink),0.07); }
+    .history-table td { padding: 12px 16px; border-bottom: 1px solid rgba(var(--bm-ink),0.05); font-size: 13px; vertical-align: middle; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: rgba(var(--bm-ink),0.02); }
+    .rec-photo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; cursor: zoom-in; }
+    .rec-parent { font-weight: 700; color: rgb(var(--bm-ink)); }
+    .rec-child { color: rgba(var(--bm-ink),0.45); font-size: 12px; margin-top: 2px; }
+    .rec-time { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); }
+    .rec-date { font-size: 11px; color: rgba(var(--bm-ink),0.38); margin-top: 2px; }
+    .btn-rec-delete { background: none; border: none; color: rgba(var(--bm-ink),0.2); font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: color 0.2s; }
     .btn-rec-delete:hover { color: #ef4444; }
-    .history-empty { text-align: center; padding: 40px; color: #94a3b8; background: white; }
+    .history-empty { text-align: center; padding: 40px; color: rgba(var(--bm-ink),0.3); background: white; font-size: 14px; }
 
     /* PHOTO FULLSCREEN */
-    #photoFullModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 400; align-items: center; justify-content: center; cursor: zoom-out; }
+    #photoFullModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 400; align-items: center; justify-content: center; cursor: zoom-out; }
     #photoFullModal.show { display: flex; }
     #photoFullImg { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
   </style>
@@ -107,19 +159,19 @@
 
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo"><img src="logo.webp" alt="BLUE MOUSE"></div>
+    <img src="logo.webp" alt="BLUE MOUSE">
     <div class="login-subtitle">管理者ページ — お迎え記録システム</div>
     <input type="password" class="login-input" id="adminPassword" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLogin()">
     <button class="login-btn" onclick="adminLogin()">ログイン</button>
     <div class="login-error" id="loginError">パスワードが正しくありません</div>
-    <div style="margin-top:20px"><a href="index.html" style="color:#64748b;font-size:13px;text-decoration:none">← お迎え画面に戻る</a></div>
+    <div style="margin-top:20px"><a href="index.html" style="color:rgba(255,255,255,0.28);font-size:13px;text-decoration:none">← お迎え画面に戻る</a></div>
   </div>
 </div>
 
 <div id="mainApp">
   <div class="header">
     <div class="header-left">
-      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" style="height:44px;width:auto;display:block;"></a>
+      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" style="height:42px;width:auto;display:block;"></a>
       <span class="header-title">管理者ページ</span>
     </div>
     <div class="header-right">
@@ -129,35 +181,32 @@
   </div>
 
   <div class="content">
-    <!-- 保護者一覧 -->
     <div class="section-title">保護者一覧</div>
     <div class="parent-grid" id="parentGrid">
       <div class="empty-state"><div class="icon">⏳</div><div>読み込み中...</div></div>
     </div>
 
-    <!-- 週別サマリー -->
     <div class="summary-section">
-      <div class="summary-header">
-        <div class="summary-section-title">📊 週別お迎えサマリー</div>
+      <div class="section-header">
+        <div class="section-header-title">週別お迎えサマリー</div>
         <div class="week-nav">
-          <button class="week-nav-btn" onclick="weekPrev()">◀</button>
+          <button class="week-btn" onclick="weekPrev()">◀</button>
           <span class="week-label" id="weekLabel">–</span>
-          <button class="week-nav-btn" onclick="weekNext()">▶</button>
+          <button class="week-btn" onclick="weekNext()">▶</button>
           <button class="week-today-btn" onclick="weekThis()">今週</button>
         </div>
       </div>
       <div class="table-wrap">
-        <div id="summaryContainer" style="text-align:center;padding:40px;color:#94a3b8;background:white;border-radius:16px">読み込み中...</div>
+        <div id="summaryContainer" style="text-align:center;padding:40px;color:rgba(40,30,24,0.3);background:white;border-radius:16px">読み込み中...</div>
       </div>
     </div>
 
-    <!-- お迎え履歴 -->
     <div class="history-section">
-      <div class="history-header">
-        <div class="history-title">📋 お迎え履歴</div>
+      <div class="section-header">
+        <div class="section-header-title">お迎え履歴</div>
         <div class="history-filter">
           <input type="date" class="filter-input" id="filterDate">
-          <input type="text" class="filter-input" id="filterName" placeholder="保護者名で絞り込み" style="width:160px">
+          <input type="text" class="filter-input" id="filterName" placeholder="名前で絞り込み" style="width:150px">
         </div>
       </div>
       <div class="history-table-wrap">
@@ -182,10 +231,7 @@ const firebaseConfig = {
   appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
 };
 
-let db;
-let parentList = [];
-let allRecords = [];
-let weekStart = getWeekStart(new Date());
+let db, parentList = [], allRecords = [], weekStart = getWeekStart(new Date());
 
 window.addEventListener('load', () => {
   firebase.initializeApp(firebaseConfig);
@@ -223,7 +269,7 @@ async function loadParentList() {
   const snap = await db.collection('parents').get();
   parentList = [];
   if (snap.empty) {
-    grid.innerHTML = '<div class="empty-state"><div class="icon">👥</div><div>保護者が登録されていません<br><a href="register.html" style="color:#16a34a">＋ 保護者を追加する</a></div></div>';
+    grid.innerHTML = '<div class="empty-state"><div class="icon">👥</div><div>保護者が登録されていません<br><a href="register.html" style="color:var(--bm-coral)">＋ 保護者を追加する</a></div></div>';
     return;
   }
   grid.innerHTML = '';
@@ -232,9 +278,8 @@ async function loadParentList() {
     parentList.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '' });
     const card = document.createElement('div');
     card.className = 'parent-card';
-    const photo = d.photoBase64 || generateAvatar(d.name);
     card.innerHTML = `
-      <img class="parent-card-photo" src="${photo}" alt="${d.name}">
+      <img class="parent-card-photo" src="${d.photoBase64 || generateAvatar(d.name)}" alt="${d.name}">
       <div class="parent-card-name">${d.name}</div>
       <div class="parent-card-child">${d.childName ? 'お子様：' + d.childName : ''}</div>
       <button class="btn-delete-parent" onclick="deleteParent('${doc.id}','${d.name}',event)">🗑 削除</button>`;
@@ -250,39 +295,36 @@ async function deleteParent(id, name, e) {
 }
 
 function generateAvatar(name) {
-  const char = name ? name.charAt(0) : '?';
-  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23334155"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23f8fafc">${encodeURIComponent(char)}</text></svg>`;
+  const c = name ? name.charAt(0) : '?';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
 }
 
-// ===== 週別サマリー =====
+/* ===== 週別サマリー ===== */
 function getWeekStart(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff); d.setHours(0, 0, 0, 0);
-  return d;
+  const d = new Date(date), day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  d.setHours(0,0,0,0); return d;
 }
 
 async function loadWeekSummary() {
   const container = document.getElementById('summaryContainer');
-  container.innerHTML = '<div style="padding:32px;text-align:center;color:#94a3b8">読み込み中...</div>';
-  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(d.getDate() + i); return d; });
-  const d0 = days[0], d6 = days[6];
+  container.innerHTML = '<div style="padding:32px;text-align:center;color:rgba(40,30,24,0.3)">読み込み中...</div>';
+  const days = Array.from({length:7}, (_,i) => { const d=new Date(weekStart); d.setDate(d.getDate()+i); return d; });
+  const d0=days[0], d6=days[6];
   document.getElementById('weekLabel').textContent = `${d0.getMonth()+1}/${d0.getDate()} 〜 ${d6.getMonth()+1}/${d6.getDate()}`;
-  const weekEnd = new Date(days[6]); weekEnd.setHours(23, 59, 59, 999);
+  const weekEnd = new Date(days[6]); weekEnd.setHours(23,59,59,999);
   let records = [];
   try {
     const snap = await db.collection('pickupRecords')
-      .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(weekStart))
-      .where('timestamp', '<=', firebase.firestore.Timestamp.fromDate(weekEnd)).get();
-    snap.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+      .where('timestamp','>=', firebase.firestore.Timestamp.fromDate(weekStart))
+      .where('timestamp','<=', firebase.firestore.Timestamp.fromDate(weekEnd)).get();
+    snap.forEach(doc => records.push({id:doc.id,...doc.data()}));
   } catch(e) { container.innerHTML = '<div style="padding:32px;text-align:center;color:#ef4444">読み込みに失敗しました</div>'; return; }
 
-  // parentId × dateKey → 件数
   const data = {};
   records.forEach(r => {
     if (!r.timestamp || !r.parentId) return;
-    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
     const key = `${jst.getFullYear()}-${jst.getMonth()+1}-${jst.getDate()}`;
     const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
     if (!data[r.parentId]) data[r.parentId] = {};
@@ -290,33 +332,30 @@ async function loadWeekSummary() {
     data[r.parentId][key].push(hm);
   });
 
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
+  const today = new Date(), todayKey = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
   const dayNames = ['日','月','火','水','木','金','土'];
   let html = '<table class="summary-table"><thead><tr><th class="th-name">保護者</th>';
   days.forEach(d => {
-    const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-    const dow = d.getDay();
-    const cls = [key === todayKey ? 'today' : '', dow === 0 ? 'sun' : '', dow === 6 ? 'sat' : ''].filter(Boolean).join(' ');
+    const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`, dow = d.getDay();
+    const cls = [key===todayKey?'today':'', dow===0?'sun':'', dow===6?'sat':''].filter(Boolean).join(' ');
     html += `<th class="th-day ${cls}">${d.getMonth()+1}/${d.getDate()}<br><span style="font-size:10px;font-weight:500">${dayNames[dow]}</span></th>`;
   });
   html += '</tr></thead><tbody>';
-
-  if (parentList.length === 0) {
-    html += `<tr><td colspan="8" style="text-align:center;padding:40px;color:#94a3b8">保護者が登録されていません</td></tr>`;
+  if (!parentList.length) {
+    html += `<tr><td colspan="8" style="text-align:center;padding:40px;color:rgba(40,30,24,0.3)">保護者が登録されていません</td></tr>`;
   } else {
     parentList.forEach(p => {
       html += '<tr>';
-      const photo = p.photo || generateAvatar(p.name);
-      html += `<td class="td-name"><div class="staff-inner"><img src="${photo}" class="staff-photo-sm" alt=""><div><div class="staff-name-sm">${p.name}</div><div style="font-size:11px;color:#94a3b8">${p.childName}</div></div></div></td>`;
+      html += `<td class="td-name"><div class="staff-inner">
+        <img src="${p.photo||generateAvatar(p.name)}" class="staff-photo-sm" alt="">
+        <div><div class="staff-name-sm">${p.name}</div><div class="staff-child-sm">${p.childName}</div></div>
+      </div></td>`;
       days.forEach(d => {
-        const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-        const isToday = key === todayKey;
-        const times = data[p.id] && data[p.id][key];
-        html += `<td class="td-day ${isToday ? 'today' : ''}">`;
-        if (times && times.length > 0) {
-          times.forEach(t => { html += `<div class="pickup-badge">🏠 ${t}</div>`; });
-        } else { html += `<span class="empty-cell">–</span>`; }
+        const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`, isToday = key===todayKey;
+        const times = data[p.id]?.[key];
+        html += `<td class="td-day ${isToday?'today':''}">`;
+        if (times?.length) times.forEach(t => { html += `<div class="pickup-badge">🏠 ${t}</div>`; });
+        else html += `<span class="empty-cell">–</span>`;
         html += '</td>';
       });
       html += '</tr>';
@@ -326,58 +365,53 @@ async function loadWeekSummary() {
   container.innerHTML = html;
 }
 
-function weekPrev() { weekStart = new Date(weekStart); weekStart.setDate(weekStart.getDate() - 7); loadWeekSummary(); }
-function weekNext() { weekStart = new Date(weekStart); weekStart.setDate(weekStart.getDate() + 7); loadWeekSummary(); }
-function weekThis() { weekStart = getWeekStart(new Date()); loadWeekSummary(); }
+function weekPrev() { weekStart=new Date(weekStart); weekStart.setDate(weekStart.getDate()-7); loadWeekSummary(); }
+function weekNext() { weekStart=new Date(weekStart); weekStart.setDate(weekStart.getDate()+7); loadWeekSummary(); }
+function weekThis() { weekStart=getWeekStart(new Date()); loadWeekSummary(); }
 
-// ===== お迎え履歴 =====
+/* ===== お迎え履歴 ===== */
 async function loadHistory() {
   try {
-    const snap = await db.collection('pickupRecords').orderBy('timestamp', 'desc').limit(200).get();
+    const snap = await db.collection('pickupRecords').orderBy('timestamp','desc').limit(200).get();
     allRecords = [];
-    snap.forEach(doc => allRecords.push({ id: doc.id, ...doc.data() }));
+    snap.forEach(doc => allRecords.push({id:doc.id,...doc.data()}));
   } catch(e) { allRecords = []; }
   renderHistory();
 }
 
 function renderHistory() {
-  const filterDate = document.getElementById('filterDate').value;
-  const filterName = document.getElementById('filterName').value.trim().toLowerCase();
+  const fDate = document.getElementById('filterDate').value;
+  const fName = document.getElementById('filterName').value.trim().toLowerCase();
   let records = allRecords;
-
-  if (filterDate) {
-    records = records.filter(r => {
-      if (!r.timestamp) return false;
-      const jst = new Date(r.timestamp.toDate().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-      const d = `${jst.getFullYear()}-${String(jst.getMonth()+1).padStart(2,'0')}-${String(jst.getDate()).padStart(2,'0')}`;
-      return d === filterDate;
-    });
-  }
-  if (filterName) {
-    records = records.filter(r => (r.parentName || '').toLowerCase().includes(filterName) || (r.childName || '').toLowerCase().includes(filterName));
-  }
+  if (fDate) records = records.filter(r => {
+    if (!r.timestamp) return false;
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+    const d = `${jst.getFullYear()}-${String(jst.getMonth()+1).padStart(2,'0')}-${String(jst.getDate()).padStart(2,'0')}`;
+    return d === fDate;
+  });
+  if (fName) records = records.filter(r => (r.parentName||'').toLowerCase().includes(fName) || (r.childName||'').toLowerCase().includes(fName));
 
   const container = document.getElementById('historyContainer');
-  if (records.length === 0) { container.innerHTML = '<div class="history-empty">お迎え記録がありません</div>'; return; }
+  if (!records.length) { container.innerHTML = '<div class="history-empty">お迎え記録がありません</div>'; return; }
 
   let html = `<table class="history-table">
-    <thead><tr><th>写真</th><th>保護者</th><th>時刻</th><th></th></tr></thead><tbody>`;
+    <thead><tr><th>写真</th><th>保護者 / お子様</th><th>時刻</th><th></th></tr></thead><tbody>`;
   records.forEach(r => {
-    let dateStr = '–', timeStr = '–';
+    let dateStr='–', timeStr='–';
     if (r.timestamp) {
-      const jst = new Date(r.timestamp.toDate().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+      const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
       const pad = n => String(n).padStart(2,'0');
       dateStr = `${jst.getFullYear()}/${pad(jst.getMonth()+1)}/${pad(jst.getDate())}`;
       timeStr = `${pad(jst.getHours())}:${pad(jst.getMinutes())}`;
     }
-    const photo = r.photoBase64
-      ? `<img class="rec-photo" src="${r.photoBase64}" alt="" onclick="openPhotoFull('${r.photoBase64}')" style="cursor:zoom-in">`
-      : `<div style="width:44px;height:44px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>`;
+    const photoHtml = r.photoBase64
+      ? `<img class="rec-photo" src="${r.photoBase64}" alt="" onclick="openPhotoFull('${r.photoBase64}')">`
+      : `<div style="width:44px;height:44px;border-radius:10px;background:rgba(242,144,108,0.1);display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>`;
     html += `<tr>
-      <td>${photo}</td>
-      <td><div class="rec-parent">${r.parentName || '–'}</div><div class="rec-child">${r.childName ? 'お子様：' + r.childName : ''}</div></td>
+      <td>${photoHtml}</td>
+      <td><div class="rec-parent">${r.parentName||'–'}</div><div class="rec-child">${r.childName?'お子様：'+r.childName:''}</div></td>
       <td><div class="rec-time">${timeStr}</div><div class="rec-date">${dateStr}</div></td>
-      <td><button class="btn-rec-delete" onclick="deleteRecord('${r.id}', this)">🗑</button></td>
+      <td><button class="btn-rec-delete" onclick="deleteRecord('${r.id}',this)">🗑</button></td>
     </tr>`;
   });
   html += '</tbody></table>';
@@ -393,7 +427,7 @@ async function deleteRecord(id, btn) {
   } catch(e) { alert('削除に失敗しました'); }
 }
 
-function openPhotoFull(src) { document.getElementById('photoFullImg').src = src; document.getElementById('photoFullModal').classList.add('show'); }
+function openPhotoFull(src) { document.getElementById('photoFullImg').src=src; document.getElementById('photoFullModal').classList.add('show'); }
 function closePhotoFull() { document.getElementById('photoFullModal').classList.remove('show'); }
 </script>
 </body>
