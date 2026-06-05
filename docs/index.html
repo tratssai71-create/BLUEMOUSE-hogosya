@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お迎え記録 | BLUE MOUSE</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.14/dist/face-api.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0faf4; color: #1e293b; min-height: 100vh; }
+
+    /* ===== LOGIN ===== */
+    #loginScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2a1a 0%, #1a4a2e 100%);
+    }
+    .login-box {
+      background: rgba(255,255,255,0.06); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+      padding: 48px 40px; width: 380px; text-align: center;
+    }
+    .login-logo { margin-bottom: 16px; }
+    .login-logo img { width: 160px; height: auto; }
+    .login-subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 32px; }
+    .login-time { font-size: 42px; font-weight: 200; color: #f8fafc; letter-spacing: 3px; margin-bottom: 8px; }
+    .login-date { font-size: 14px; color: #94a3b8; margin-bottom: 32px; }
+    .login-face-section { margin-bottom: 16px; border-radius: 16px; overflow: hidden; background: #1e293b; position: relative; }
+    #loginVideo { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; border-radius: 16px; }
+    .login-face-status {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.65); color: #94a3b8; font-size: 12px; font-weight: 500;
+      padding: 8px 12px; text-align: center; transition: color 0.3s;
+    }
+    .login-face-status.ok { color: #34d399; }
+    .login-divider { display: flex; align-items: center; gap: 10px; color: #475569; font-size: 12px; margin: 14px 0; }
+    .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+    .login-input {
+      width: 100%; padding: 14px 18px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
+      color: #f8fafc; font-size: 16px; margin-bottom: 16px; text-align: center;
+      letter-spacing: 4px; outline: none; transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: #34d399; }
+    .login-input::placeholder { letter-spacing: 1px; color: #64748b; }
+    .login-btn {
+      width: 100%; padding: 14px; border-radius: 12px;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white; font-size: 16px; font-weight: 600; border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(22,163,74,0.4); transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,0.5); }
+    .login-error { color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
+
+    /* ===== MAIN ===== */
+    #mainApp { display: none; min-height: 100vh; }
+
+    /* Sidebar */
+    #sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+      background: rgba(10,30,18,0.97); backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 24px 0; transform: translateX(-220px); transition: transform 0.3s ease; z-index: 100;
+    }
+    #sidebar.open { transform: translateX(0); }
+    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo img { width: 110px; height: auto; margin-bottom: 4px; }
+    .sidebar-logo .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .sidebar-nav { padding: 16px 0; }
+    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 14px; transition: background 0.2s, color 0.2s; cursor: pointer; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: #f8fafc; }
+    .sidebar-link .icon { font-size: 18px; }
+    #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+    #sidebarOverlay.show { display: block; }
+
+    /* Topbar */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      background: #0a1e12; border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; padding: 0 16px; z-index: 50;
+    }
+    .menu-btn { background: none; border: none; color: #f8fafc; font-size: 22px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s; }
+    .menu-btn:hover { background: rgba(255,255,255,0.1); }
+    .topbar-logo { height: 36px; width: auto; margin-left: 12px; display: block; }
+    .topbar a { display: flex; align-items: center; line-height: 0; }
+
+    /* Clock Screen */
+    #clockScreen { padding-top: 56px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: #f0faf4; }
+    .clock-time-section { text-align: center; padding: 32px 20px 24px; }
+    .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: #0f2a1a; }
+    .clock-date { font-size: 15px; color: #64748b; margin-top: 6px; }
+
+    /* Camera */
+    .camera-wrapper { position: relative; width: min(400px, 90vw); border-radius: 20px; overflow: hidden; background: #1e293b; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+    #video { width: 100%; display: block; border-radius: 18px; }
+    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: #94a3b8; background: rgba(0,0,0,0.4); }
+    .face-detecting { color: #fbbf24; }
+    .face-recognized { color: #34d399; }
+
+    /* Profile Card */
+    #profileCard {
+      display: none; width: min(400px, 90vw); background: white;
+      border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-top: 16px;
+      flex-direction: row; align-items: center; gap: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08); animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    #parentPhotoEl { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #16a34a; flex-shrink: 0; }
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 18px; font-weight: 700; color: #0f172a; }
+    .profile-child { font-size: 13px; color: #64748b; margin-top: 2px; }
+    .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+
+    /* Action Button */
+    .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; padding-bottom: 32px; }
+    .btn-pickup {
+      flex: 1; padding: 22px; border-radius: 14px; border: none;
+      font-size: 22px; font-weight: 700; cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white; box-shadow: 0 2px 16px rgba(22,163,74,0.35);
+    }
+    .btn-pickup:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
+    .btn-pickup:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(22,163,74,0.45); }
+    .btn-pickup:not(:disabled):active { transform: translateY(0); }
+
+    /* Thanks Screen */
+    #thanksScreen {
+      display: none; min-height: 100vh; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center; padding: 40px 20px;
+      background: #071a10; position: relative; overflow: hidden;
+    }
+    #thanksScreen::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(16,185,129,0.25) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .thanks-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; padding: 6px 18px; border-radius: 999px; margin-bottom: 32px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; }
+    .thanks-photo-wrap { position: relative; width: 148px; height: 148px; margin: 0 auto 28px; }
+    .thanks-photo { width: 136px; height: 136px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.15); position: absolute; top: 6px; left: 6px; }
+    .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(52,211,153,0.7); animation: ring-expand 2s ease-out infinite; }
+    @keyframes ring-expand { 0% { transform: scale(0.88); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.12); opacity: 0; } }
+    .thanks-name { font-size: 32px; font-weight: 800; color: #f8fafc; margin-bottom: 6px; }
+    .thanks-child { font-size: 16px; color: rgba(255,255,255,0.55); margin-bottom: 10px; font-weight: 500; }
+    .thanks-message { font-size: 17px; color: rgba(255,255,255,0.6); margin-bottom: 28px; font-weight: 500; }
+    .thanks-time { font-size: 13px; color: rgba(255,255,255,0.3); letter-spacing: 0.5px; }
+    .thanks-bar { width: 180px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 36px; overflow: hidden; }
+    .thanks-bar-fill { height: 100%; width: 0%; background: #34d399; border-radius: 2px; transition: width 5s linear; }
+
+    /* Loading */
+    #loadingOverlay { position: fixed; inset: 0; background: #0f2a1a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 999; }
+    .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #34d399; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">起動中...</div>
+</div>
+
+<!-- ログイン画面 -->
+<div id="loginScreen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo"><img src="logo.webp" alt="BLUE MOUSE"></div>
+    <div class="login-subtitle">保護者お迎え記録システム</div>
+    <div class="login-time" id="loginTime">--:--:--</div>
+    <div class="login-date" id="loginDate"></div>
+    <div class="login-face-section">
+      <video id="loginVideo" autoplay muted playsinline></video>
+      <div class="login-face-status" id="loginFaceStatus">カメラを起動中...</div>
+    </div>
+    <div class="login-divider"><span>または</span></div>
+    <input type="password" class="login-input" id="passwordInput" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">パスワードでログイン</button>
+    <div class="login-error" id="loginError">パスワードが正しくありません</div>
+  </div>
+</div>
+
+<!-- メインアプリ -->
+<div id="mainApp">
+  <div id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.webp" alt="BLUE MOUSE">
+      <div class="sub">お迎え記録システム</div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="sidebar-link" onclick="closeSidebar()"><span class="icon">🏠</span> お迎え画面</span>
+      <a href="admin.html" class="sidebar-link"><span class="icon">📋</span> 管理者ページ</a>
+      <span class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> ログアウト</span>
+    </nav>
+  </div>
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo"></a>
+  </div>
+
+  <!-- 認証画面 -->
+  <div id="clockScreen">
+    <div class="clock-time-section">
+      <div class="clock-time" id="clockTime">--:--:--</div>
+      <div class="clock-date" id="clockDate"></div>
+    </div>
+    <div class="camera-wrapper">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="overlay"></canvas>
+      <div class="camera-status" id="cameraStatus">カメラを起動中...</div>
+    </div>
+    <div id="profileCard">
+      <img id="parentPhotoEl" src="" alt="">
+      <div class="profile-info">
+        <div class="profile-name" id="parentNameEl"></div>
+        <div class="profile-child" id="childNameEl"></div>
+        <div class="auth-badge">✓ 顔認証完了</div>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
+    </div>
+  </div>
+
+  <!-- サンクス画面 -->
+  <div id="thanksScreen">
+    <div class="thanks-badge">✓ &nbsp;お迎え記録完了</div>
+    <div class="thanks-photo-wrap">
+      <div class="thanks-ring"></div>
+      <img class="thanks-photo" id="thanksPhoto" src="" alt="">
+    </div>
+    <div class="thanks-name" id="thanksName"></div>
+    <div class="thanks-child" id="thanksChild"></div>
+    <div class="thanks-message">お迎えありがとうございます！</div>
+    <div class="thanks-time" id="thanksTime"></div>
+    <div class="thanks-bar"><div class="thanks-bar-fill" id="thanksBar"></div></div>
+  </div>
+</div>
+
+<script>
+const STAFF_PASSWORD = 'mouse';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+const firebaseConfig = {
+  apiKey: "AIzaSyAxkP1UP8UQffk8PxMp1_PUKNYaqo63QfU",
+  authDomain: "bluemouse-dfd31.firebaseapp.com",
+  projectId: "bluemouse-dfd31",
+  storageBucket: "bluemouse-dfd31.firebasestorage.app",
+  messagingSenderId: "244172125496",
+  appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
+};
+
+let db;
+let currentParent = null;
+let detectionActive = false;
+let labeledDescriptors = [];
+let detectionTimer = null;
+let videoStream = null;
+let lastFaceTime = 0;
+let loginCameraStream = null;
+let loginDetectionTimer = null;
+
+window.addEventListener('load', async () => {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  startClock('loginTime', 'loginDate');
+  setLoadingText('顔認証モデルを読み込み中...');
+  await waitForFaceApi();
+  try {
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+    ]);
+  } catch(e) { console.error('モデル読み込みエラー:', e); }
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  startLoginCamera();
+});
+
+function waitForFaceApi() {
+  return new Promise(resolve => {
+    const check = () => { if (window.faceapi) resolve(); else setTimeout(check, 100); };
+    check();
+  });
+}
+function setLoadingText(text) { document.getElementById('loadingText').textContent = text; }
+
+function startClock(timeId, dateId) {
+  const update = () => {
+    const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const h = String(jst.getHours()).padStart(2,'0');
+    const m = String(jst.getMinutes()).padStart(2,'0');
+    const s = String(jst.getSeconds()).padStart(2,'0');
+    const timeEl = document.getElementById(timeId);
+    const dateEl = document.getElementById(dateId);
+    if (timeEl) timeEl.textContent = `${h}:${m}:${s}`;
+    if (dateEl) {
+      const days = ['日','月','火','水','木','金','土'];
+      dateEl.textContent = `${jst.getFullYear()}年${jst.getMonth()+1}月${jst.getDate()}日（${days[jst.getDay()]}）`;
+    }
+  };
+  update(); setInterval(update, 1000);
+}
+
+async function startLoginCamera() {
+  const statusEl = document.getElementById('loginFaceStatus');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
+    loginCameraStream = stream;
+    const video = document.getElementById('loginVideo');
+    video.srcObject = stream;
+    await video.play();
+    await loadParentDescriptors();
+    if (labeledDescriptors.length === 0) { statusEl.textContent = '📷 顔を向けてください（保護者未登録）'; return; }
+    statusEl.textContent = '📷 顔を向けるとログインできます';
+    startLoginDetection();
+  } catch(e) { statusEl.textContent = 'カメラを利用できません'; }
+}
+
+function startLoginDetection() {
+  const video = document.getElementById('loginVideo');
+  const statusEl = document.getElementById('loginFaceStatus');
+  loginDetectionTimer = setInterval(async () => {
+    if (!video.videoWidth || !loginCameraStream) return;
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+    let detection;
+    try { detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor(); } catch(e) { return; }
+    if (!detection) { statusEl.textContent = '📷 顔を向けるとログインできます'; statusEl.className = 'login-face-status'; return; }
+    let bestMatch = null, bestDistance = Infinity;
+    for (const p of labeledDescriptors) {
+      const dist = faceapi.euclideanDistance(detection.descriptor, p.descriptor);
+      if (dist < bestDistance) { bestDistance = dist; bestMatch = p; }
+    }
+    if (bestDistance < 0.5 && bestMatch) {
+      statusEl.textContent = `✓ ${bestMatch.name}さんを認証しました`;
+      statusEl.className = 'login-face-status ok';
+      stopLoginCamera();
+      setTimeout(() => doLogin(), 600);
+    } else { statusEl.textContent = '認識中...'; statusEl.className = 'login-face-status'; }
+  }, 800);
+}
+
+function stopLoginCamera() {
+  if (loginDetectionTimer) { clearInterval(loginDetectionTimer); loginDetectionTimer = null; }
+  if (loginCameraStream) { loginCameraStream.getTracks().forEach(t => t.stop()); loginCameraStream = null; }
+}
+
+function doLogin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  startClock('clockTime', 'clockDate');
+  startCamera();
+}
+
+function login() {
+  const pw = document.getElementById('passwordInput').value;
+  if (pw === STAFF_PASSWORD) { stopLoginCamera(); doLogin(); }
+  else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+
+function logout() {
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  if (detectionTimer) { clearInterval(detectionTimer); detectionTimer = null; }
+  currentParent = null;
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  closeSidebar();
+  startLoginCamera();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+    videoStream = stream;
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    await video.play();
+    setStatus('保護者の顔をカメラに向けてください', 'detecting');
+    await loadParentDescriptors();
+    startDetection();
+  } catch(e) { setStatus('カメラにアクセスできません', ''); }
+}
+
+async function loadParentDescriptors() {
+  const snapshot = await db.collection('parents').get();
+  labeledDescriptors = [];
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    if (d.faceDescriptor && d.faceDescriptor.length > 0) {
+      labeledDescriptors.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '', descriptor: new Float32Array(d.faceDescriptor) });
+    }
+  });
+}
+
+function startDetection() {
+  const video = document.getElementById('video');
+  detectionTimer = setInterval(async () => {
+    if (!video.videoWidth) return;
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
+    const detection = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
+    if (!detection) {
+      if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile();
+      if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting');
+      return;
+    }
+    lastFaceTime = Date.now();
+    if (labeledDescriptors.length === 0) { setStatus('保護者が未登録です（管理者ページから登録してください）', ''); return; }
+    let bestMatch = null, bestDistance = Infinity;
+    for (const p of labeledDescriptors) {
+      const dist = faceapi.euclideanDistance(detection.descriptor, p.descriptor);
+      if (dist < bestDistance) { bestDistance = dist; bestMatch = p; }
+    }
+    if (bestDistance < 0.5) {
+      if (!currentParent || currentParent.id !== bestMatch.id) showProfile(bestMatch);
+    } else {
+      if (currentParent) hideProfile();
+      setStatus('登録されていない方です', 'detecting');
+    }
+  }, 600);
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('cameraStatus');
+  el.textContent = msg; el.className = 'camera-status';
+  if (cls === 'recognized') el.classList.add('face-recognized');
+  if (cls === 'detecting') el.classList.add('face-detecting');
+}
+
+function showProfile(parent) {
+  currentParent = parent;
+  document.getElementById('parentNameEl').textContent = parent.name;
+  document.getElementById('childNameEl').textContent = parent.childName ? `お子様：${parent.childName}` : '';
+  document.getElementById('parentPhotoEl').src = parent.photo || generateAvatar(parent.name);
+  document.getElementById('profileCard').style.display = 'flex';
+  document.getElementById('btnPickup').disabled = false;
+  setStatus(`✓ ${parent.name}さんを認証しました`, 'recognized');
+}
+
+function hideProfile() {
+  currentParent = null;
+  document.getElementById('profileCard').style.display = 'none';
+  document.getElementById('btnPickup').disabled = true;
+}
+
+function generateAvatar(name) {
+  const char = name ? name.charAt(0) : '?';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23334155"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23f8fafc">${encodeURIComponent(char)}</text></svg>`;
+}
+
+async function recordPickup() {
+  if (!currentParent) return;
+  const parent = { ...currentParent };
+  document.getElementById('btnPickup').disabled = true;
+  const photo = capturePhoto();
+  const now = new Date();
+  const jst = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  await db.collection('pickupRecords').add({
+    parentId: parent.id, parentName: parent.name, childName: parent.childName || '',
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo
+  });
+  showThanks(parent, jst);
+}
+
+function capturePhoto() {
+  const video = document.getElementById('video');
+  const canvas = document.createElement('canvas');
+  const W = 320, H = 240;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  const scale = Math.min(W / video.videoWidth, H / video.videoHeight);
+  const w = video.videoWidth * scale, h = video.videoHeight * scale;
+  ctx.drawImage(video, (W-w)/2, (H-h)/2, w, h);
+  return canvas.toDataURL('image/jpeg', 0.4);
+}
+
+function showThanks(parent, time) {
+  if (detectionTimer) { clearInterval(detectionTimer); detectionTimer = null; }
+  document.getElementById('clockScreen').style.display = 'none';
+  const h = String(time.getHours()).padStart(2,'0');
+  const m = String(time.getMinutes()).padStart(2,'0');
+  document.getElementById('thanksName').textContent = parent.name + ' さん';
+  document.getElementById('thanksChild').textContent = parent.childName ? `お子様：${parent.childName}` : '';
+  document.getElementById('thanksPhoto').src = parent.photo || generateAvatar(parent.name);
+  document.getElementById('thanksTime').textContent = `お迎え時刻：${h}:${m}`;
+  document.getElementById('thanksScreen').style.display = 'flex';
+  setTimeout(() => document.getElementById('thanksBar').style.width = '100%', 100);
+  setTimeout(() => returnToClock(), 5000);
+}
+
+async function returnToClock() {
+  document.getElementById('thanksScreen').style.display = 'none';
+  document.getElementById('thanksBar').style.width = '0%';
+  document.getElementById('clockScreen').style.display = 'flex';
+  hideProfile();
+  setStatus('保護者の顔をカメラに向けてください', 'detecting');
+  await loadParentDescriptors();
+  startDetection();
+}
+</script>
+</body>
+</html>
