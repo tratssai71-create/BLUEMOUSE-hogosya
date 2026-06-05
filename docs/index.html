@@ -65,15 +65,28 @@
     #profileCard {
       display: none; width: min(400px, 90vw); background: white;
       border: 1.5px solid rgba(var(--bm-ink),0.08); border-radius: 18px; padding: 16px; margin-top: 16px;
-      flex-direction: row; align-items: center; gap: 16px;
+      flex-direction: column; gap: 14px;
       box-shadow: 0 2px 16px rgba(var(--bm-ink),0.08); animation: slideIn 0.3s ease;
     }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .profile-row { display: flex; align-items: center; gap: 14px; }
     #parentPhotoEl { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2.5px solid var(--bm-coral); flex-shrink: 0; }
     .profile-info { flex: 1; }
     .profile-name { font-size: 18px; font-weight: 700; color: rgb(var(--bm-ink)); }
-    .profile-child { font-size: 13px; color: rgba(var(--bm-ink),0.5); margin-top: 2px; }
+    .profile-child-name { font-size: 13px; color: rgba(var(--bm-ink),0.5); margin-top: 2px; }
     .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.35); color: #3aa8ae; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+
+    /* 子供写真エリア */
+    #childPhotoArea {
+      display: none;
+      align-items: center; gap: 12px;
+      background: rgba(var(--bm-ink),0.03); border-radius: 12px;
+      padding: 10px 14px;
+      border: 1px solid rgba(var(--bm-ink),0.06);
+    }
+    #childPhotoEl { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(94,193,198,0.4); flex-shrink: 0; }
+    .child-label { font-size: 11px; font-weight: 700; color: rgba(var(--bm-ink),0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .child-name-text { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); }
 
     .action-buttons { display: flex; width: min(400px, 90vw); margin-top: 16px; }
     .btn-pickup {
@@ -164,11 +177,22 @@
     <div class="camera-status" id="cameraStatus">カメラを起動中...</div>
   </div>
   <div id="profileCard">
-    <img id="parentPhotoEl" src="" alt="">
-    <div class="profile-info">
-      <div class="profile-name" id="parentNameEl"></div>
-      <div class="profile-child" id="childNameEl"></div>
-      <div class="auth-badge">✓ 顔認証完了</div>
+    <!-- 保護者行 -->
+    <div class="profile-row">
+      <img id="parentPhotoEl" src="" alt="">
+      <div class="profile-info">
+        <div class="profile-name" id="parentNameEl"></div>
+        <div class="profile-child-name" id="parentRelLabel"></div>
+        <div class="auth-badge">✓ 顔認証完了</div>
+      </div>
+    </div>
+    <!-- 子供行 -->
+    <div id="childPhotoArea">
+      <img id="childPhotoEl" src="" alt="">
+      <div>
+        <div class="child-label">お子様</div>
+        <div class="child-name-text" id="childNameEl"></div>
+      </div>
     </div>
   </div>
   <div class="action-buttons">
@@ -252,7 +276,7 @@ async function startCamera() {
 async function loadParentDescriptors() {
   const snap = await db.collection('parents').get();
   labeledDescriptors = [];
-  snap.forEach(doc => { const d = doc.data(); if (d.faceDescriptor?.length) labeledDescriptors.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '', descriptor: new Float32Array(d.faceDescriptor) }); });
+  snap.forEach(doc => { const d = doc.data(); if (d.faceDescriptor?.length) labeledDescriptors.push({ id: doc.id, name: d.name, childName: d.childName || '', photo: d.photoBase64 || '', childPhoto: d.childPhotoBase64 || '', descriptor: new Float32Array(d.faceDescriptor) }); });
 }
 
 function startDetection() {
@@ -280,8 +304,24 @@ function setStatus(msg, cls) {
 function showProfile(parent) {
   currentParent = parent;
   document.getElementById('parentNameEl').textContent = parent.name;
-  document.getElementById('childNameEl').textContent = parent.childName ? `お子様：${parent.childName}` : '';
+  document.getElementById('parentRelLabel').textContent = parent.childName ? `${parent.childName}の保護者` : '';
   document.getElementById('parentPhotoEl').src = parent.photo || generateAvatar(parent.name);
+
+  // 子供写真
+  const childArea = document.getElementById('childPhotoArea');
+  if (parent.childName) {
+    document.getElementById('childNameEl').textContent = parent.childName;
+    const childPhotoEl = document.getElementById('childPhotoEl');
+    if (parent.childPhoto) {
+      childPhotoEl.src = parent.childPhoto;
+    } else {
+      childPhotoEl.src = generateAvatar(parent.childName);
+    }
+    childArea.style.display = 'flex';
+  } else {
+    childArea.style.display = 'none';
+  }
+
   document.getElementById('profileCard').style.display = 'flex';
   document.getElementById('btnPickup').disabled = false;
   setStatus(`✓ ${parent.name}さんを認証しました`, 'recognized');
@@ -290,6 +330,7 @@ function showProfile(parent) {
 function hideProfile() {
   currentParent = null;
   document.getElementById('profileCard').style.display = 'none';
+  document.getElementById('childPhotoArea').style.display = 'none';
   document.getElementById('btnPickup').disabled = true;
 }
 
