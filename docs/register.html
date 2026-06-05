@@ -19,199 +19,348 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
+    /* HEADER */
     .header {
-      background: rgb(var(--bm-ink)); color: white; padding: 0 24px; height: 60px;
+      background: rgb(var(--bm-ink)); padding: 0 24px; height: 60px;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 12px rgba(var(--bm-ink),0.25);
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 16px rgba(var(--bm-ink),0.3);
     }
-    .header-logo img { height: 42px; width: auto; }
-    .header-title { font-size: 14px; color: rgba(255,255,255,0.4); margin-left: 12px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo img { height: 40px; width: auto; }
+    .header-title { font-size: 14px; color: rgba(255,255,255,0.4); }
     .back-link {
       color: rgba(255,255,255,0.45); font-size: 13px; text-decoration: none;
-      padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
-      transition: background 0.2s, color 0.2s;
+      padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      transition: background 0.2s;
     }
     .back-link:hover { background: rgba(255,255,255,0.08); color: white; }
 
-    .content { max-width: 680px; margin: 0 auto; padding: 32px 24px; }
+    /* PROGRESS STEPS */
+    .progress-wrap {
+      background: white; border-bottom: 1px solid rgba(var(--bm-ink),0.06);
+      padding: 20px 24px;
+    }
+    .progress-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 0; }
+    .step {
+      display: flex; align-items: center; gap: 8px; flex: 1;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: ''; position: absolute; left: calc(50% + 20px); right: calc(-50% + 20px);
+      top: 18px; height: 2px; background: rgba(var(--bm-ink),0.1);
+      z-index: 0;
+    }
+    .step.done:not(:last-child)::after { background: var(--bm-coral); }
+    .step-inner { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; z-index: 1; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      background: rgba(var(--bm-ink),0.06);
+      color: rgba(var(--bm-ink),0.3);
+      border: 2px solid rgba(var(--bm-ink),0.1);
+      transition: all 0.3s;
+    }
+    .step.active .step-num {
+      background: var(--bm-coral); color: white;
+      border-color: var(--bm-coral);
+      box-shadow: 0 4px 14px rgba(242,144,108,0.4);
+    }
+    .step.done .step-num {
+      background: rgba(242,144,108,0.15); color: var(--bm-coral-dark);
+      border-color: rgba(242,144,108,0.4);
+    }
+    .step-label { font-size: 11px; font-weight: 600; color: rgba(var(--bm-ink),0.35); text-align: center; white-space: nowrap; }
+    .step.active .step-label { color: var(--bm-coral-dark); }
+    .step.done .step-label { color: rgba(var(--bm-ink),0.55); }
 
+    /* CONTENT */
+    .content { max-width: 680px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    /* SECTION CARD */
     .card {
-      background: white; border-radius: 20px; padding: 32px; margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(var(--bm-ink),0.07);
+      background: white; border-radius: 24px; padding: 32px;
+      margin-bottom: 20px; box-shadow: 0 2px 16px rgba(var(--bm-ink),0.06);
+      border: 1.5px solid rgba(var(--bm-ink),0.05);
     }
-    .card-title {
-      font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink));
-      margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(var(--bm-ink),0.07);
-      display: flex; align-items: center; gap: 8px;
+    .card-head {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 28px; padding-bottom: 20px;
+      border-bottom: 1px solid rgba(var(--bm-ink),0.06);
     }
+    .card-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .card-icon.coral { background: rgba(242,144,108,0.12); }
+    .card-icon.teal  { background: rgba(94,193,198,0.12); }
+    .card-icon.yellow{ background: rgba(245,210,74,0.15); }
+    .card-title { font-size: 17px; font-weight: 800; color: rgb(var(--bm-ink)); }
+    .card-subtitle { font-size: 13px; color: rgba(var(--bm-ink),0.45); margin-top: 2px; }
 
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 0; }
+    @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
     .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: rgba(var(--bm-ink),0.55); margin-bottom: 8px; }
-    .required { color: var(--bm-coral); margin-left: 4px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: rgba(var(--bm-ink),0.45); margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .required { color: var(--bm-coral); margin-left: 2px; }
     .form-input {
-      width: 100%; padding: 12px 16px; border: 1.5px solid rgba(var(--bm-ink),0.1);
-      border-radius: 10px; font-size: 15px; color: rgb(var(--bm-ink));
-      outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: rgba(var(--bm-ink),0.025);
+      width: 100%; padding: 13px 16px; border: 1.5px solid rgba(var(--bm-ink),0.1);
+      border-radius: 12px; font-size: 15px; color: rgb(var(--bm-ink));
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      background: rgba(var(--bm-ink),0.02);
     }
-    .form-input:focus { border-color: var(--bm-coral); box-shadow: 0 0 0 3px rgba(242,144,108,0.12); background: white; }
+    .form-input:focus { border-color: var(--bm-coral); box-shadow: 0 0 0 3px rgba(242,144,108,0.1); background: white; }
+    .form-input::placeholder { color: rgba(var(--bm-ink),0.25); }
 
-    /* Camera */
+    /* PHOTO PAIR */
+    .photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 560px) { .photo-pair { grid-template-columns: 1fr; } }
+
+    .photo-slot { display: flex; flex-direction: column; gap: 10px; }
+    .photo-slot-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; color: rgb(var(--bm-ink));
+    }
+    .photo-slot-badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+    .photo-slot-badge.coral { background: rgba(242,144,108,0.15); color: var(--bm-coral-dark); }
+    .photo-slot-badge.teal  { background: rgba(94,193,198,0.15); color: #2e9da3; }
+
     .camera-box {
       background: rgb(var(--bm-ink)); border-radius: 16px; overflow: hidden;
-      position: relative; aspect-ratio: 4/3; margin-bottom: 16px;
+      position: relative; aspect-ratio: 1/1; /* 正方形 */
       display: flex; align-items: center; justify-content: center;
     }
-    .camera-placeholder { text-align: center; color: rgba(255,255,255,0.35); padding: 32px; }
-    .camera-placeholder .icon { font-size: 48px; margin-bottom: 12px; }
-    .camera-placeholder .text { font-size: 14px; }
-    #regVideo { width: 100%; display: none; border-radius: 16px; }
-    #capturedImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 16px; }
-    .camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-    .cam-corners { position: absolute; inset: 14px; }
-    .corner { position: absolute; width: 22px; height: 22px; border-color: rgba(255,255,255,0.5); border-style: solid; }
-    .corner.tl { top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0; }
-    .corner.tr { top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0; }
-    .corner.bl { bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px; }
-    .corner.br { bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0; }
-    .face-guide-wrap { display: none; flex-direction: column; align-items: center; gap: 12px; }
-    .face-guide {
-      width: 190px; height: 235px; border: 2px dashed rgba(94,193,198,0.9);
-      border-radius: 50%; animation: pulse-guide 2s ease-in-out infinite; position: relative;
-    }
-    @keyframes pulse-guide {
-      0%,100% { box-shadow: 0 0 16px rgba(94,193,198,0.2); border-color: rgba(94,193,198,0.9); }
-      50%      { box-shadow: 0 0 28px rgba(94,193,198,0.5); border-color: rgba(94,193,198,1); }
-    }
-    .face-crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width:0; height:0; }
-    .cross-h { position:absolute;width:28px;height:2px;background:rgba(255,255,255,0.7);top:0;left:0;transform:translate(-50%,-50%);border-radius:1px; }
-    .cross-v { position:absolute;width:2px;height:28px;background:rgba(255,255,255,0.7);top:0;left:0;transform:translate(-50%,-50%);border-radius:1px; }
-    .cross-dot { position:absolute;width:10px;height:10px;border-radius:50%;background:var(--bm-teal);border:2px solid white;top:0;left:0;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(94,193,198,0.8); }
-    .face-guide-label { color:rgba(255,255,255,0.9);font-size:12px;font-weight:600;background:rgba(0,0,0,0.5);padding:5px 14px;border-radius:999px;letter-spacing:0.5px; }
+    .cam-placeholder { text-align: center; color: rgba(255,255,255,0.3); padding: 20px; }
+    .cam-placeholder .icon { font-size: 36px; margin-bottom: 8px; }
+    .cam-placeholder .text { font-size: 12px; line-height: 1.5; }
+    .cam-video { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .cam-captured { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 16px; }
 
-    .camera-controls { display: flex; gap: 12px; margin-bottom: 16px; }
-    .btn { padding: 11px 20px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+    /* 顔ガイド */
+    .face-guide-wrap { display: none; flex-direction: column; align-items: center; gap: 8px; position: absolute; inset: 0; justify-content: center; pointer-events: none; }
+    .face-guide { width: 130px; height: 160px; border: 2px dashed rgba(94,193,198,0.9); border-radius: 50%; animation: pulse-guide 2s ease-in-out infinite; }
+    @keyframes pulse-guide { 0%,100%{ box-shadow: 0 0 12px rgba(94,193,198,0.2); } 50%{ box-shadow: 0 0 22px rgba(94,193,198,0.5); } }
+    .face-guide-label { color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; background: rgba(0,0,0,0.55); padding: 4px 12px; border-radius: 999px; }
+
+    .cam-controls { display: flex; gap: 8px; }
+    .btn { padding: 10px 16px; border-radius: 10px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; flex: 1; }
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: translateY(0); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
-    .btn-primary { background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark)); color: white; flex: 1; }
-    .btn-secondary { background: rgba(var(--bm-ink),0.06); color: rgba(var(--bm-ink),0.6); flex: 1; }
-    .btn-capture { background: linear-gradient(135deg, var(--bm-teal), #44aaaf); color: white; flex: 1; }
+    .btn-start  { background: rgba(var(--bm-ink),0.07); color: rgba(var(--bm-ink),0.65); }
+    .btn-shoot  { background: linear-gradient(135deg, var(--bm-teal), #44aaaf); color: white; }
+    .btn-retake { background: rgba(var(--bm-ink),0.07); color: rgba(var(--bm-ink),0.55); }
+    .btn-upload { background: rgba(var(--bm-ink),0.05); color: rgba(var(--bm-ink),0.5); border: 1px dashed rgba(var(--bm-ink),0.15); font-size: 12px; }
 
-    .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .divider::before, .divider::after { content:''; flex:1; height:1px; background: rgba(var(--bm-ink),0.08); }
-    .divider span { font-size: 12px; color: rgba(var(--bm-ink),0.35); white-space: nowrap; }
-
-    .status-box { padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; margin-top: 12px; display: none; }
-    .status-loading { background: #fef9c3; color: #854d0e; display: flex; align-items: center; gap: 8px; }
-    .status-success { background: rgba(94,193,198,0.12); color: #2a8e93; border: 1px solid rgba(94,193,198,0.3); }
-    .status-error { background: #fee2e2; color: #dc2626; }
-    .spinner { width:16px;height:16px;border:2px solid rgba(133,77,14,0.2);border-top-color:#854d0e;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .btn-save {
-      width: 100%; padding: 16px; border-radius: 14px;
-      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
-      color: white; font-size: 16px; font-weight: 700; border: none; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(242,144,108,0.32); transition: transform 0.1s, opacity 0.2s;
+    .status-inline {
+      font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px;
+      display: none; margin-top: 4px; text-align: center;
     }
-    .btn-save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(242,144,108,0.42); }
-    .btn-save:disabled { opacity: 0.35; cursor: not-allowed; }
+    .status-inline.loading { background: #fef9c3; color: #854d0e; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .status-inline.success { background: rgba(94,193,198,0.12); color: #2e9da3; display: block; }
+    .status-inline.error   { background: #fee2e2; color: #dc2626; display: block; }
+    .mini-spin { width: 12px; height: 12px; border: 2px solid rgba(133,77,14,0.2); border-top-color: #854d0e; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
 
-    #loadingOverlay { position:fixed;inset:0;background:rgba(var(--bm-ink),0.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999; }
-    .loading-spinner { width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--bm-coral);border-radius:50%;animation:spin .8s linear infinite; }
-    .loading-text { color:rgba(255,255,255,0.4);font-size:14px; }
+    /* SAVE BUTTON */
+    .btn-save-wrap { position: sticky; bottom: 0; padding: 16px 0; background: linear-gradient(to top, var(--bm-cream) 70%, transparent); }
+    .btn-save {
+      width: 100%; padding: 18px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; font-size: 17px; font-weight: 800; border: none; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(242,144,108,0.38); transition: transform 0.1s, box-shadow 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .btn-save:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(242,144,108,0.48); }
+    .btn-save:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+    /* LOADING OVERLAY */
+    #loadingOverlay {
+      position: fixed; inset: 0; background: rgba(var(--bm-ink),0.88);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 999;
+    }
+    .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--bm-coral); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: rgba(255,255,255,0.45); font-size: 14px; }
+
+    /* AUTH */
+    #authScreen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, rgb(var(--bm-ink)), #3d2518);
+    }
+    .auth-box {
+      background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px;
+      padding: 48px 40px; width: 360px; text-align: center;
+    }
+    .auth-input {
+      width: 100%; padding: 13px 16px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
+      color: var(--bm-cream); font-size: 15px; text-align: center;
+      letter-spacing: 3px; outline: none; margin-bottom: 14px;
+    }
+    .auth-input:focus { border-color: var(--bm-coral); }
+    .auth-btn {
+      width: 100%; padding: 13px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-<!-- 管理者認証 -->
-<div id="authScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,rgb(40,30,24),#3d2518)">
-  <div style="background:rgba(255,255,255,0.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:48px 40px;width:360px;text-align:center">
-    <div style="font-size:40px;margin-bottom:8px">🔐</div>
+<!-- 管理者認証（通常アクセス時のみ） -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div style="font-size:38px;margin-bottom:10px">🔐</div>
     <div style="font-size:18px;font-weight:700;color:var(--bm-coral);margin-bottom:4px">管理者認証</div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px">保護者登録には管理者パスワードが必要です</div>
-    <input type="password" id="authInput" placeholder="管理者パスワード"
-      style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fffdf7;font-size:15px;text-align:center;letter-spacing:3px;outline:none;margin-bottom:14px"
-      onkeydown="if(event.key==='Enter')checkAuth()">
-    <button onclick="checkAuth()" style="width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,var(--bm-coral),var(--bm-coral-dark));color:white;font-size:15px;font-weight:600;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(242,144,108,0.35)">
-      認証する
-    </button>
+    <div style="font-size:13px;color:rgba(255,255,255,0.38);margin-bottom:28px">保護者登録には管理者パスワードが必要です</div>
+    <input type="password" class="auth-input" id="authInput" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">認証する</button>
     <div id="authError" style="color:#f87171;font-size:13px;margin-top:12px;display:none">パスワードが正しくありません</div>
-    <div style="margin-top:20px"><a href="admin.html" style="color:rgba(255,255,255,0.3);font-size:13px;text-decoration:none">← 管理者ページへ戻る</a></div>
+    <div style="margin-top:20px"><a href="index.html" style="color:rgba(255,255,255,0.25);font-size:13px;text-decoration:none">← お迎え画面へ戻る</a></div>
   </div>
 </div>
 
-<div id="loadingOverlay" style="display:none">
+<div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">顔認証モデルを読み込み中...</div>
 </div>
 
 <div id="mainContent" style="display:none">
   <div class="header">
-    <div style="display:flex;align-items:center;gap:12px">
-      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" style="height:42px;width:auto;display:block;"></a>
+    <div class="header-left">
+      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="header-logo"></a>
       <span class="header-title">保護者登録</span>
     </div>
-    <a href="admin.html" class="back-link">← 管理者ページへ</a>
+    <a href="index.html" class="back-link">← 戻る</a>
+  </div>
+
+  <!-- ステップバー -->
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <div class="step active" id="step1">
+        <div class="step-inner">
+          <div class="step-num">1</div>
+          <div class="step-label">基本情報</div>
+        </div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-inner">
+          <div class="step-num">2</div>
+          <div class="step-label">写真登録</div>
+        </div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-inner">
+          <div class="step-num">3</div>
+          <div class="step-label">完了</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="content">
+
+    <!-- STEP 1: 基本情報 -->
     <div class="card">
-      <div class="card-title">👤 保護者情報</div>
-      <div class="form-group">
-        <label class="form-label">保護者氏名<span class="required">*</span></label>
-        <input type="text" class="form-input" id="inputName" placeholder="例：山田 花子">
+      <div class="card-head">
+        <div class="card-icon coral">👨‍👩‍👧</div>
+        <div>
+          <div class="card-title">基本情報</div>
+          <div class="card-subtitle">保護者氏名とお子様の名前を入力してください</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">お子様の名前<span class="required">*</span></label>
-        <input type="text" class="form-input" id="inputChildName" placeholder="例：山田 太郎">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">保護者氏名<span class="required">*</span></label>
+          <input type="text" class="form-input" id="inputName" placeholder="例：山田 花子" oninput="checkStep1()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">お子様の名前<span class="required">*</span></label>
+          <input type="text" class="form-input" id="inputChildName" placeholder="例：山田 太郎" oninput="checkStep1()">
+        </div>
       </div>
     </div>
 
+    <!-- STEP 2: 写真 -->
     <div class="card">
-      <div class="card-title">📷 顔写真・顔認証データの登録</div>
-      <p style="font-size:13px;color:rgba(40,30,24,0.45);margin-bottom:16px">
-        カメラで撮影するか、スマホで撮った写真をアップロードしてください。<br>
-        顔が正面を向いている写真を使うと精度が上がります。
-      </p>
-      <div class="camera-box" id="cameraBox">
-        <div class="camera-placeholder" id="cameraPlaceholder">
-          <div class="icon">📷</div>
-          <div class="text">「カメラを起動」を押して撮影してください</div>
+      <div class="card-head">
+        <div class="card-icon teal">📷</div>
+        <div>
+          <div class="card-title">写真登録</div>
+          <div class="card-subtitle">保護者・お子様それぞれの写真を撮影してください</div>
         </div>
-        <video id="regVideo" autoplay muted playsinline></video>
-        <img id="capturedImg" src="" alt="撮影した写真">
-        <div class="camera-overlay">
-          <div class="cam-corners">
-            <span class="corner tl"></span><span class="corner tr"></span>
-            <span class="corner bl"></span><span class="corner br"></span>
+      </div>
+
+      <div class="photo-pair">
+        <!-- 保護者写真 -->
+        <div class="photo-slot">
+          <div class="photo-slot-label">
+            👤 保護者様
+            <span class="photo-slot-badge coral">顔認証あり</span>
           </div>
-          <div class="face-guide-wrap" id="faceGuide">
-            <div class="face-guide">
-              <div class="face-crosshair">
-                <div class="cross-h"></div><div class="cross-v"></div><div class="cross-dot"></div>
-              </div>
+          <div class="camera-box" id="parentCameraBox">
+            <div class="cam-placeholder" id="parentPlaceholder">
+              <div class="icon">🧑</div>
+              <div class="text">カメラを起動して<br>撮影してください</div>
             </div>
-            <div class="face-guide-label">🔴 鼻をここに合わせてください</div>
+            <video class="cam-video" id="parentVideo" autoplay muted playsinline></video>
+            <img class="cam-captured" id="parentCaptured" src="" alt="">
+            <div class="face-guide-wrap" id="parentFaceGuide">
+              <div class="face-guide"></div>
+              <div class="face-guide-label">顔をここに合わせて</div>
+            </div>
           </div>
+          <div class="cam-controls">
+            <button class="btn btn-start" id="btnParentStart" onclick="startCam('parent')">📷 カメラ起動</button>
+            <button class="btn btn-shoot" id="btnParentShoot" onclick="shootCam('parent')" disabled>撮影</button>
+          </div>
+          <button class="btn btn-retake" id="btnParentRetake" onclick="retakeCam('parent')" style="display:none">↩ 撮り直し</button>
+          <input type="file" id="parentUpload" accept="image/*" style="display:none" onchange="uploadPhoto(event,'parent')">
+          <button class="btn btn-upload" onclick="document.getElementById('parentUpload').click()">📁 画像アップロード</button>
+          <div class="status-inline" id="parentStatus"></div>
+        </div>
+
+        <!-- 子供写真 -->
+        <div class="photo-slot">
+          <div class="photo-slot-label">
+            🧒 お子様
+            <span class="photo-slot-badge teal">任意</span>
+          </div>
+          <div class="camera-box" id="childCameraBox">
+            <div class="cam-placeholder" id="childPlaceholder">
+              <div class="icon">👧</div>
+              <div class="text">カメラを起動して<br>撮影してください</div>
+            </div>
+            <video class="cam-video" id="childVideo" autoplay muted playsinline></video>
+            <img class="cam-captured" id="childCaptured" src="" alt="">
+          </div>
+          <div class="cam-controls">
+            <button class="btn btn-start" id="btnChildStart" onclick="startCam('child')">📷 カメラ起動</button>
+            <button class="btn btn-shoot" id="btnChildShoot" onclick="shootCam('child')" disabled>撮影</button>
+          </div>
+          <button class="btn btn-retake" id="btnChildRetake" onclick="retakeCam('child')" style="display:none">↩ 撮り直し</button>
+          <input type="file" id="childUpload" accept="image/*" style="display:none" onchange="uploadPhoto(event,'child')">
+          <button class="btn btn-upload" onclick="document.getElementById('childUpload').click()">📁 画像アップロード</button>
+          <div class="status-inline" id="childStatus"></div>
         </div>
       </div>
-      <div class="camera-controls">
-        <button class="btn btn-primary" id="btnStartCamera" onclick="startCamera()">📷 カメラを起動</button>
-        <button class="btn btn-capture" id="btnCapture" onclick="capturePhoto()" disabled>✓ 撮影する</button>
-        <button class="btn btn-secondary" id="btnRetake" onclick="retakePhoto()" style="display:none">↩ 撮り直し</button>
-      </div>
-      <div class="divider"><span>または</span></div>
-      <input type="file" id="photoUploadInput" accept="image/*" style="display:none" onchange="uploadPhoto(event)">
-      <button class="btn btn-secondary" style="width:100%;margin-bottom:16px" onclick="document.getElementById('photoUploadInput').click()">
-        📁 写真をアップロード（スマホ撮影など）
-      </button>
-      <div class="status-box status-loading" id="statusLoading"><div class="spinner"></div><span id="statusLoadingText">顔を解析中...</span></div>
-      <div class="status-box status-success" id="statusSuccess">✓ 顔認証データの取得が完了しました！</div>
-      <div class="status-box status-error" id="statusError">顔が検出できませんでした。明るい場所で正面を向いて撮影してください。</div>
     </div>
 
-    <button class="btn-save" id="btnSave" onclick="saveParent()" disabled>保護者を登録する</button>
+    <!-- 登録ボタン -->
+    <div class="btn-save-wrap">
+      <button class="btn-save" id="btnSave" onclick="saveParent()" disabled>登録する</button>
+    </div>
+
   </div>
 </div>
 
@@ -227,7 +376,11 @@ const firebaseConfig = {
   appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
 };
 
-let db, videoStream = null, faceDescriptor = null, photoBase64 = null;
+let db;
+const state = {
+  parent: { stream: null, photoB64: null, faceDescriptor: null },
+  child:  { stream: null, photoB64: null }
+};
 
 // ?noauth=1 のときは認証スキップ
 if (new URLSearchParams(location.search).get('noauth') === '1') {
@@ -254,6 +407,7 @@ async function initApp() {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   await waitForFaceApi();
+  document.getElementById('loadingText').textContent = '顔認証モデルを読み込み中...';
   await Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -267,44 +421,169 @@ function waitForFaceApi() {
   return new Promise(resolve => { const c = () => { if (window.faceapi) resolve(); else setTimeout(c, 100); }; c(); });
 }
 
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
-    videoStream = stream;
-    const v = document.getElementById('regVideo'); v.srcObject = stream; await v.play();
-    document.getElementById('cameraPlaceholder').style.display = 'none';
-    document.getElementById('capturedImg').style.display = 'none';
-    v.style.display = 'block';
-    document.getElementById('faceGuide').style.display = 'flex';
-    document.getElementById('btnStartCamera').style.display = 'none';
-    document.getElementById('btnCapture').disabled = false;
-    document.getElementById('btnRetake').style.display = 'none';
-    hideStatus(); faceDescriptor = null; photoBase64 = null;
-    document.getElementById('btnSave').disabled = true;
-  } catch(e) { alert('カメラにアクセスできません。\nブラウザの設定でカメラを許可してください。'); }
+// ===== ステップ管理 =====
+function checkStep1() {
+  const ok = document.getElementById('inputName').value.trim() && document.getElementById('inputChildName').value.trim();
+  document.getElementById('step1').classList.toggle('done', !!ok);
+  document.getElementById('step2').classList.toggle('active', !!ok);
+  updateSaveBtn();
 }
 
-async function capturePhoto() {
-  const v = document.getElementById('regVideo');
-  if (!v.videoWidth) return;
-  showStatus('loading', '顔を検出・解析中...');
-  document.getElementById('btnCapture').disabled = true;
+function updateSaveBtn() {
+  const name = document.getElementById('inputName').value.trim();
+  const child = document.getElementById('inputChildName').value.trim();
+  const hasParentFace = !!state.parent.faceDescriptor;
+  const ok = name && child && hasParentFace;
+  document.getElementById('btnSave').disabled = !ok;
+  if (ok) {
+    document.getElementById('step2').classList.add('done');
+    document.getElementById('step3').classList.add('active');
+  }
+}
+
+// ===== カメラ =====
+async function startCam(who) {
+  const videoEl = document.getElementById(`${who}Video`);
+  const placeholderEl = document.getElementById(`${who}Placeholder`);
+  const shootBtn = document.getElementById(`btn${cap(who)}Shoot`);
+  const startBtn = document.getElementById(`btn${cap(who)}Start`);
+
+  // 既存ストリーム停止
+  if (state[who].stream) { state[who].stream.getTracks().forEach(t => t.stop()); }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+    state[who].stream = stream;
+    videoEl.srcObject = stream; await videoEl.play();
+    placeholderEl.style.display = 'none';
+    videoEl.style.display = 'block';
+    document.getElementById(`${who}Captured`).style.display = 'none';
+    if (who === 'parent') document.getElementById('parentFaceGuide').style.display = 'flex';
+    shootBtn.disabled = false;
+    startBtn.style.display = 'none';
+    document.getElementById(`btn${cap(who)}Retake`).style.display = 'none';
+    setStatus(who, '');
+  } catch(e) { alert('カメラにアクセスできません。ブラウザの設定でカメラを許可してください。'); }
+}
+
+async function shootCam(who) {
+  const videoEl = document.getElementById(`${who}Video`);
+  if (!videoEl.videoWidth) return;
+
+  if (who === 'parent') {
+    setStatus('parent', 'loading', '顔を解析中...');
+    document.getElementById('btnParentShoot').disabled = true;
+  }
+
   const canvas = document.createElement('canvas');
-  canvas.width = v.videoWidth; canvas.height = v.videoHeight;
-  canvas.getContext('2d').drawImage(v, 0, 0);
-  let det;
-  try { det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) {}
-  if (!det) { showStatus('error', '顔が検出できませんでした。正面を向いて再撮影してください。'); document.getElementById('btnCapture').disabled = false; return; }
-  const r = cropFace(canvas, det);
-  photoBase64 = r.photoB64; faceDescriptor = r.descriptor;
-  const img = document.getElementById('capturedImg');
-  img.src = photoBase64; img.style.display = 'block';
-  v.style.display = 'none'; document.getElementById('faceGuide').style.display = 'none';
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-  document.getElementById('btnRetake').style.display = 'block';
-  document.getElementById('btnCapture').style.display = 'none';
-  document.getElementById('btnStartCamera').style.display = 'none';
-  showStatus('success', ''); document.getElementById('btnSave').disabled = false;
+  canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
+  canvas.getContext('2d').drawImage(videoEl, 0, 0);
+
+  if (who === 'parent') {
+    // 顔認証データ抽出
+    let det;
+    try { det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) {}
+    if (!det) {
+      setStatus('parent', 'error', '顔が検出できませんでした。正面を向いて再撮影してください。');
+      document.getElementById('btnParentShoot').disabled = false;
+      return;
+    }
+    const { photoB64, descriptor } = cropFace(canvas, det);
+    state.parent.photoB64 = photoB64;
+    state.parent.faceDescriptor = descriptor;
+    setStatus('parent', 'success', '✓ 顔認証データ取得完了');
+  } else {
+    // 子供はそのままクロップ（顔検出なしでもOK）
+    const c2 = document.createElement('canvas'); c2.width = 300; c2.height = 300;
+    c2.getContext('2d').drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 300, 300);
+    state.child.photoB64 = c2.toDataURL('image/jpeg', 0.8);
+    setStatus('child', 'success', '✓ 写真撮影完了');
+  }
+
+  // カメラ停止・プレビュー表示
+  stopStream(who);
+  const capturedEl = document.getElementById(`${who}Captured`);
+  capturedEl.src = who === 'parent' ? state.parent.photoB64 : state.child.photoB64;
+  capturedEl.style.display = 'block';
+  document.getElementById(`${who}Video`).style.display = 'none';
+  if (who === 'parent') document.getElementById('parentFaceGuide').style.display = 'none';
+  document.getElementById(`btn${cap(who)}Retake`).style.display = 'block';
+  document.getElementById(`btn${cap(who)}Shoot`).style.display = 'none';
+  document.getElementById(`btn${cap(who)}Start`).style.display = 'none';
+  updateSaveBtn();
+}
+
+function retakeCam(who) {
+  state[who].photoB64 = null;
+  if (who === 'parent') state.parent.faceDescriptor = null;
+  document.getElementById(`${who}Captured`).style.display = 'none';
+  document.getElementById(`btn${cap(who)}Retake`).style.display = 'none';
+  document.getElementById(`btn${cap(who)}Shoot`).style.display = 'block';
+  document.getElementById(`btn${cap(who)}Start`).style.display = 'block';
+  document.getElementById(`${who}Placeholder`).style.display = 'block';
+  setStatus(who, '');
+  updateSaveBtn();
+  startCam(who);
+}
+
+function stopStream(who) {
+  if (state[who].stream) { state[who].stream.getTracks().forEach(t => t.stop()); state[who].stream = null; }
+}
+
+// ===== アップロード =====
+async function uploadPhoto(event, who) {
+  const file = event.target.files[0]; if (!file) return;
+  stopStream(who);
+  document.getElementById(`${who}Video`).style.display = 'none';
+  if (who === 'parent') document.getElementById('parentFaceGuide').style.display = 'none';
+  document.getElementById(`${who}Placeholder`).style.display = 'none';
+  setStatus(who, 'loading', '解析中...');
+  state[who].photoB64 = null;
+  if (who === 'parent') state.parent.faceDescriptor = null;
+  updateSaveBtn();
+
+  const img = await loadImageFile(file);
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+
+  if (who === 'parent') {
+    let det;
+    try { det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) {}
+    if (!det) {
+      setStatus('parent', 'error', '顔が検出できませんでした。正面向きの写真を使ってください。');
+      document.getElementById(`${who}Placeholder`).style.display = 'block';
+      event.target.value = ''; return;
+    }
+    const { photoB64, descriptor } = cropFace(canvas, det);
+    state.parent.photoB64 = photoB64; state.parent.faceDescriptor = descriptor;
+    setStatus('parent', 'success', '✓ 顔認証データ取得完了');
+    showCaptured('parent', photoB64);
+  } else {
+    const c2 = document.createElement('canvas'); c2.width=300; c2.height=300;
+    c2.getContext('2d').drawImage(canvas,0,0,canvas.width,canvas.height,0,0,300,300);
+    state.child.photoB64 = c2.toDataURL('image/jpeg', 0.8);
+    setStatus('child', 'success', '✓ 写真登録完了');
+    showCaptured('child', state.child.photoB64);
+  }
+  event.target.value = '';
+  updateSaveBtn();
+}
+
+function showCaptured(who, src) {
+  const el = document.getElementById(`${who}Captured`);
+  el.src = src; el.style.display = 'block';
+  document.getElementById(`btn${cap(who)}Shoot`).style.display = 'none';
+  document.getElementById(`btn${cap(who)}Start`).style.display = 'none';
+  document.getElementById(`btn${cap(who)}Retake`).style.display = 'block';
+}
+
+function loadImageFile(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = e.target.result; };
+    reader.readAsDataURL(file);
+  });
 }
 
 function cropFace(canvas, det) {
@@ -313,84 +592,55 @@ function cropFace(canvas, det) {
   let cx = (face.x + face.width/2) - sz/2, cy = (face.y + face.height/2) - sz/2;
   cx = Math.max(0, Math.min(cx, canvas.width - sz));
   cy = Math.max(0, Math.min(cy, canvas.height - sz));
-  const c2 = document.createElement('canvas'); c2.width = 300; c2.height = 300;
+  const c2 = document.createElement('canvas'); c2.width=300; c2.height=300;
   c2.getContext('2d').drawImage(canvas, cx, cy, sz, sz, 0, 0, 300, 300);
   return { photoB64: c2.toDataURL('image/jpeg', 0.8), descriptor: Array.from(det.descriptor) };
 }
 
-function retakePhoto() {
-  document.getElementById('capturedImg').style.display = 'none'; document.getElementById('capturedImg').src = '';
-  document.getElementById('btnRetake').style.display = 'none';
-  document.getElementById('btnCapture').style.display = 'block'; document.getElementById('btnCapture').disabled = false;
-  document.getElementById('btnStartCamera').style.display = 'block';
-  faceDescriptor = null; photoBase64 = null; document.getElementById('btnSave').disabled = true;
-  hideStatus(); startCamera();
-}
-
-async function uploadPhoto(event) {
-  const file = event.target.files[0]; if (!file) return;
-  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
-  document.getElementById('regVideo').style.display = 'none';
-  document.getElementById('faceGuide').style.display = 'none';
-  document.getElementById('cameraPlaceholder').style.display = 'none';
-  showStatus('loading', '顔を検出・解析中...');
-  faceDescriptor = null; photoBase64 = null; document.getElementById('btnSave').disabled = true;
-  const img = await new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = e => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = e.target.result; };
-    reader.readAsDataURL(file);
-  });
-  const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-  canvas.getContext('2d').drawImage(img, 0, 0);
-  let det;
-  try { det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceLandmarks().withFaceDescriptor(); } catch(e) {}
-  if (!det) {
-    showStatus('error', '顔が検出できませんでした。顔が正面を向いている写真を使ってください。');
-    document.getElementById('btnStartCamera').style.display = 'block';
-    document.getElementById('btnCapture').style.display = 'block';
-    document.getElementById('cameraPlaceholder').style.display = 'block';
-    event.target.value = ''; return;
+// ===== ステータス =====
+function setStatus(who, type, msg = '') {
+  const el = document.getElementById(`${who}Status`);
+  el.className = 'status-inline';
+  if (!type) { el.style.display = 'none'; return; }
+  if (type === 'loading') {
+    el.classList.add('loading');
+    el.innerHTML = `<div class="mini-spin"></div>${msg}`;
+  } else if (type === 'success') {
+    el.classList.add('success'); el.textContent = msg;
+  } else if (type === 'error') {
+    el.classList.add('error'); el.textContent = msg;
   }
-  const r = cropFace(canvas, det);
-  photoBase64 = r.photoB64; faceDescriptor = r.descriptor;
-  const ci = document.getElementById('capturedImg');
-  ci.src = photoBase64; ci.style.display = 'block';
-  document.getElementById('btnRetake').style.display = 'block';
-  document.getElementById('btnCapture').style.display = 'none';
-  document.getElementById('btnStartCamera').style.display = 'none';
-  showStatus('success', ''); document.getElementById('btnSave').disabled = false;
-  event.target.value = '';
 }
 
-function showStatus(type, msg) {
-  hideStatus();
-  if (type === 'loading') { document.getElementById('statusLoadingText').textContent = msg; document.getElementById('statusLoading').style.display = 'flex'; }
-  else if (type === 'success') { document.getElementById('statusSuccess').style.display = 'block'; }
-  else if (type === 'error') { document.getElementById('statusError').textContent = msg; document.getElementById('statusError').style.display = 'block'; }
-}
-function hideStatus() {
-  ['statusLoading','statusSuccess','statusError'].forEach(id => document.getElementById(id).style.display = 'none');
-}
-
+// ===== 保存 =====
 async function saveParent() {
   const name = document.getElementById('inputName').value.trim();
   const childName = document.getElementById('inputChildName').value.trim();
-  if (!name) { alert('保護者氏名を入力してください'); return; }
-  if (!childName) { alert('お子様の名前を入力してください'); return; }
-  if (!faceDescriptor) { alert('顔写真を撮影してください'); return; }
+  if (!name || !childName || !state.parent.faceDescriptor) return;
+
   document.getElementById('btnSave').disabled = true;
   document.getElementById('btnSave').textContent = '登録中...';
   try {
-    await db.collection('parents').add({ name, childName, photoBase64, faceDescriptor, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    alert(`✓ ${name}さんを登録しました！`);
-    window.location.href = 'admin.html';
+    await db.collection('parents').add({
+      name, childName,
+      photoBase64: state.parent.photoB64,
+      childPhotoBase64: state.child.photoB64 || null,
+      faceDescriptor: state.parent.faceDescriptor,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // 完了演出
+    document.getElementById('step3').classList.add('active', 'done');
+    document.getElementById('btnSave').textContent = '✓ 登録完了！';
+    document.getElementById('btnSave').style.background = 'linear-gradient(135deg,#34d399,#059669)';
+    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
   } catch(e) {
     alert('登録に失敗しました: ' + e.message);
     document.getElementById('btnSave').disabled = false;
-    document.getElementById('btnSave').textContent = '保護者を登録する';
+    document.getElementById('btnSave').textContent = '登録する';
   }
 }
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 </script>
 </body>
 </html>
