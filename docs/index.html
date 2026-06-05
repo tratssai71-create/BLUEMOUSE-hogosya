@@ -172,11 +172,6 @@
     <div class="login-subtitle">保護者お迎え記録システム</div>
     <div class="login-time" id="loginTime">--:--:--</div>
     <div class="login-date" id="loginDate"></div>
-    <div class="login-face-section">
-      <video id="loginVideo" autoplay muted playsinline></video>
-      <div class="login-face-status" id="loginFaceStatus">カメラを起動中...</div>
-    </div>
-    <div class="login-divider"><span>または</span></div>
     <input type="password" class="login-input" id="passwordInput" placeholder="管理者パスワードを入力" onkeydown="if(event.key==='Enter')login()">
     <button class="login-btn" onclick="login()">管理者パスワードでログイン</button>
     <div class="login-error" id="loginError">パスワードが正しくありません</div>
@@ -228,6 +223,10 @@
     <div class="action-buttons">
       <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
     </div>
+    <a href="register.html?noauth=1" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:32px;padding:10px 20px;border-radius:10px;background:rgba(94,193,198,0.12);border:1px solid rgba(94,193,198,0.28);color:#3aa8ae;font-size:14px;font-weight:600;text-decoration:none;transition:background 0.2s"
+      onmouseover="this.style.background='rgba(94,193,198,0.22)'" onmouseout="this.style.background='rgba(94,193,198,0.12)'">
+      ＋ 保護者様を追加する
+    </a>
   </div>
 
   <div id="thanksScreen">
