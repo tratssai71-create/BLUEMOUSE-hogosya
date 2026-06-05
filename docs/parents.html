@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>保護者一覧 | BLUE MOUSE</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bm-coral: #f2906c; --bm-coral-dark: #e87e59;
+      --bm-teal: #5ec1c6; --bm-cream: #fffdf7; --bm-ink: 40, 30, 24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Hiragino Sans','Meiryo',sans-serif; background:var(--bm-cream); color:rgb(var(--bm-ink)); min-height:100vh; }
+
+    /* LOGIN */
+    #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,rgb(var(--bm-ink)),#3d2518); }
+    .login-box { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:48px 40px; width:360px; text-align:center; }
+    .login-box img { width:150px; height:auto; margin-bottom:16px; }
+    .login-subtitle { font-size:13px; color:rgba(255,255,255,0.35); margin-bottom:28px; }
+    .login-input { width:100%; padding:13px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:var(--bm-cream); font-size:15px; text-align:center; letter-spacing:3px; outline:none; margin-bottom:14px; transition:border-color .2s; }
+    .login-input:focus { border-color:var(--bm-coral); }
+    .login-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,var(--bm-coral),var(--bm-coral-dark)); color:white; font-size:15px; font-weight:600; border:none; cursor:pointer; }
+    .login-error { color:#f87171; font-size:13px; margin-top:12px; display:none; }
+
+    /* HEADER */
+    #mainApp { display:none; }
+    .header { background:rgb(var(--bm-ink)); height:60px; padding:0 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(var(--bm-ink),.3); }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-left img { height:36px; width:auto; }
+    .header-title { font-size:14px; color:rgba(255,255,255,.38); }
+    .header-right { display:flex; gap:10px; align-items:center; }
+    .btn-header { padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; cursor:pointer; text-decoration:none; }
+    .btn-add { background:linear-gradient(135deg,var(--bm-coral),var(--bm-coral-dark)); color:white; }
+    .btn-ghost { background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.1) !important; }
+    .btn-ghost:hover { background:rgba(255,255,255,.12); color:white; }
+
+    /* CONTENT */
+    .content { max-width:1100px; margin:0 auto; padding:36px 24px 60px; }
+    .page-title { font-size:22px; font-weight:800; color:rgb(var(--bm-ink)); margin-bottom:6px; }
+    .page-sub { font-size:13px; color:rgba(var(--bm-ink),.4); margin-bottom:32px; }
+
+    /* SEARCH */
+    .search-bar { margin-bottom:28px; }
+    .search-input { width:100%; max-width:360px; padding:12px 16px 12px 42px; border:1.5px solid rgba(var(--bm-ink),.1); border-radius:12px; font-size:15px; color:rgb(var(--bm-ink)); outline:none; background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(40,30,24,.3)' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.868-3.834zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E") 14px center no-repeat; transition:border-color .2s; }
+    .search-input:focus { border-color:var(--bm-coral); }
+
+    /* PARENT GRID */
+    .parent-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px; }
+    .parent-card { background:white; border-radius:20px; padding:24px 18px; text-align:center; box-shadow:0 2px 12px rgba(var(--bm-ink),.06); border:2px solid transparent; transition:transform .2s,box-shadow .2s,border-color .2s; }
+    .parent-card:hover { transform:translateY(-4px); box-shadow:0 10px 32px rgba(var(--bm-ink),.1); border-color:var(--bm-coral); }
+    .parent-photo { width:88px; height:88px; border-radius:50%; object-fit:cover; border:3px solid rgba(var(--bm-ink),.07); margin:0 auto 14px; display:block; }
+    .parent-name { font-size:16px; font-weight:800; color:rgb(var(--bm-ink)); margin-bottom:4px; }
+    .parent-child { font-size:12px; color:rgba(var(--bm-ink),.45); margin-bottom:6px; }
+    .child-photo-wrap { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:16px; }
+    .child-thumb { width:36px; height:36px; border-radius:8px; object-fit:cover; border:2px solid rgba(94,193,198,.35); }
+    .child-thumb-label { font-size:11px; color:rgba(var(--bm-ink),.4); }
+    .btn-detail { width:100%; padding:10px; border-radius:10px; background:rgba(var(--bm-ink),.05); border:1px solid rgba(var(--bm-ink),.1); color:rgba(var(--bm-ink),.65); font-size:13px; font-weight:700; cursor:pointer; transition:background .2s,color .2s; }
+    .btn-detail:hover { background:var(--bm-coral); color:white; border-color:var(--bm-coral); }
+    .empty-state { text-align:center; padding:80px 20px; color:rgba(var(--bm-ink),.3); }
+    .empty-state .icon { font-size:52px; margin-bottom:16px; }
+
+    /* MODAL */
+    #detailModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:200; align-items:flex-start; justify-content:center; padding:20px; overflow-y:auto; }
+    #detailModal.show { display:flex; }
+    .modal-box { background:white; border-radius:24px; width:100%; max-width:740px; margin:auto; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.3); }
+    .modal-header { background:linear-gradient(135deg,rgb(var(--bm-ink)),#3d2518); padding:22px 28px; display:flex; align-items:center; gap:16px; }
+    .modal-parent-photo { width:64px; height:64px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,.2); flex-shrink:0; }
+    .modal-info { flex:1; }
+    .modal-name { font-size:20px; font-weight:800; color:white; }
+    .modal-child { font-size:13px; color:rgba(255,255,255,.5); margin-top:3px; display:flex; align-items:center; gap:8px; }
+    .modal-child-photo { width:28px; height:28px; border-radius:6px; object-fit:cover; border:1.5px solid rgba(94,193,198,.5); }
+    .modal-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
+    .modal-count { font-size:12px; color:rgba(255,255,255,.45); background:rgba(255,255,255,.08); padding:5px 12px; border-radius:999px; white-space:nowrap; }
+    .btn-modal-close { background:rgba(255,255,255,.1); color:white; border:none; width:36px; height:36px; border-radius:10px; font-size:18px; cursor:pointer; flex-shrink:0; }
+
+    /* MONTH NAV */
+    .month-nav { display:flex; align-items:center; justify-content:space-between; padding:18px 28px 14px; border-bottom:1px solid rgba(var(--bm-ink),.06); }
+    .month-label { font-size:18px; font-weight:800; color:rgb(var(--bm-ink)); }
+    .month-btn { background:rgba(var(--bm-ink),.05); border:1px solid rgba(var(--bm-ink),.1); border-radius:8px; width:36px; height:36px; font-size:15px; cursor:pointer; color:rgba(var(--bm-ink),.55); transition:background .2s; }
+    .month-btn:hover { background:rgba(var(--bm-ink),.1); }
+
+    /* CALENDAR */
+    .modal-body { padding:16px 20px 28px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+    .cal-header { text-align:center; font-size:11px; font-weight:700; color:rgba(var(--bm-ink),.35); padding:8px 0; }
+    .cal-header.sun { color:#e05555; } .cal-header.sat { color:#3b82f6; }
+    .cal-cell { min-height:76px; border-radius:10px; padding:7px 6px; border:1px solid rgba(var(--bm-ink),.06); background:rgba(var(--bm-ink),.015); font-size:12px; }
+    .cal-cell.empty { border:none; background:none; min-height:0; }
+    .cal-cell.today { border:2px solid var(--bm-coral) !important; background:rgba(242,144,108,.05); }
+    .cal-cell.has-record { background:white; border-color:rgba(var(--bm-ink),.1); box-shadow:0 2px 8px rgba(var(--bm-ink),.07); }
+    .cal-cell.sun .cal-day { color:#e05555; } .cal-cell.sat .cal-day { color:#3b82f6; }
+    .cal-day { font-size:13px; font-weight:700; color:rgba(var(--bm-ink),.7); margin-bottom:5px; }
+    .cal-pickup { font-size:10px; font-weight:700; color:var(--bm-coral-dark); background:rgba(242,144,108,.12); border:1px solid rgba(242,144,108,.25); padding:2px 6px; border-radius:5px; display:inline-block; margin-bottom:2px; white-space:nowrap; }
+    .no-records { text-align:center; padding:40px; color:rgba(var(--bm-ink),.3); }
+
+    /* PHOTO FULL */
+    #photoFullModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:400; align-items:center; justify-content:center; cursor:zoom-out; }
+    #photoFullModal.show { display:flex; }
+    #photoFullImg { max-width:90vw; max-height:90vh; border-radius:8px; object-fit:contain; }
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="logo.webp" alt="BLUE MOUSE">
+    <div class="login-subtitle">管理者ページ — 保護者一覧</div>
+    <input type="password" class="login-input" id="adminPassword" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="login-btn" onclick="adminLogin()">ログイン</button>
+    <div class="login-error" id="loginError">パスワードが正しくありません</div>
+    <div style="margin-top:20px"><a href="index.html" style="color:rgba(255,255,255,.25);font-size:13px;text-decoration:none">← お迎え画面に戻る</a></div>
+  </div>
+</div>
+
+<div id="mainApp">
+  <div class="header">
+    <div class="header-left">
+      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE"></a>
+      <span class="header-title">保護者一覧</span>
+    </div>
+    <div class="header-right">
+      <a href="register.html?noauth=1" class="btn-header btn-add">＋ 保護者追加</a>
+      <a href="calendar.html" class="btn-header btn-ghost">📅 カレンダー</a>
+      <a href="admin.html" class="btn-header btn-ghost">⚙️ 管理者</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">保護者一覧</div>
+    <div class="page-sub" id="parentCount">読み込み中...</div>
+    <div class="search-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="名前・お子様名で検索" oninput="filterParents()">
+    </div>
+    <div class="parent-grid" id="parentGrid">
+      <div class="empty-state"><div class="icon">⏳</div><div>読み込み中...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 詳細モーダル -->
+<div id="detailModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <img class="modal-parent-photo" id="modalParentPhoto" src="" alt="">
+      <div class="modal-info">
+        <div class="modal-name" id="modalParentName"></div>
+        <div class="modal-child" id="modalChildRow"></div>
+      </div>
+      <div class="modal-right">
+        <span class="modal-count" id="modalCount"></span>
+        <button class="btn-modal-close" onclick="closeDetail()">✕</button>
+      </div>
+    </div>
+    <div class="month-nav">
+      <button class="month-btn" onclick="prevMonth()">◀</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="month-btn" onclick="nextMonth()">▶</button>
+    </div>
+    <div class="modal-body">
+      <div id="calContainer"></div>
+    </div>
+  </div>
+</div>
+
+<div id="photoFullModal" onclick="closePhotoFull()">
+  <img id="photoFullImg" src="" alt="">
+</div>
+
+<script>
+const ADMIN_PASSWORD = '0218bass';
+const firebaseConfig = {
+  apiKey:"AIzaSyAxkP1UP8UQffk8PxMp1_PUKNYaqo63QfU",
+  authDomain:"bluemouse-dfd31.firebaseapp.com",
+  projectId:"bluemouse-dfd31",
+  storageBucket:"bluemouse-dfd31.firebasestorage.app",
+  messagingSenderId:"244172125496",
+  appId:"1:244172125496:web:117e6c1aeeaa056ba2bdcd"
+};
+
+let db, allParents = [], currentParentData = null, currentRecords = [], viewMonth = new Date();
+
+window.addEventListener('load', () => { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); });
+
+function adminLogin() {
+  const pw = document.getElementById('adminPassword').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    loadParents();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('adminPassword').value = '';
+  }
+}
+
+async function loadParents() {
+  const snap = await db.collection('parents').get();
+  allParents = [];
+  snap.forEach(doc => allParents.push({ id: doc.id, ...doc.data() }));
+  document.getElementById('parentCount').textContent = `全 ${allParents.length} 名登録中`;
+  renderParents(allParents);
+}
+
+function filterParents() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  renderParents(q ? allParents.filter(p => (p.name||'').toLowerCase().includes(q) || (p.childName||'').toLowerCase().includes(q)) : allParents);
+}
+
+function renderParents(list) {
+  const grid = document.getElementById('parentGrid');
+  if (!list.length) { grid.innerHTML = '<div class="empty-state"><div class="icon">👥</div><div>該当する保護者がいません</div></div>'; return; }
+  grid.innerHTML = '';
+  list.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'parent-card';
+    const photo = p.photoBase64 || avatar(p.name);
+    let childRow = '';
+    if (p.childPhotoBase64) {
+      childRow = `<div class="child-photo-wrap"><img class="child-thumb" src="${p.childPhotoBase64}" alt=""><span class="child-thumb-label">${p.childName||''}</span></div>`;
+    } else if (p.childName) {
+      childRow = `<div class="child-photo-wrap"><img class="child-thumb" src="${avatar(p.childName)}" alt=""><span class="child-thumb-label">${p.childName}</span></div>`;
+    }
+    card.innerHTML = `
+      <img class="parent-photo" src="${photo}" alt="${p.name}">
+      <div class="parent-name">${p.name}</div>
+      <div class="parent-child">${p.childName ? 'お子様：'+p.childName : ''}</div>
+      ${childRow}
+      <button class="btn-detail" onclick="openDetail('${p.id}')">📅 詳細を見る</button>`;
+    grid.appendChild(card);
+  });
+}
+
+function avatar(name) {
+  const c = name ? name.charAt(0) : '?';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
+}
+
+async function openDetail(parentId) {
+  const p = allParents.find(x => x.id === parentId);
+  if (!p) return;
+  currentParentData = p;
+  document.getElementById('modalParentName').textContent = p.name;
+  document.getElementById('modalParentPhoto').src = p.photoBase64 || avatar(p.name);
+
+  // 子供行
+  const childRow = document.getElementById('modalChildRow');
+  if (p.childName) {
+    const cphoto = p.childPhotoBase64 ? `<img class="modal-child-photo" src="${p.childPhotoBase64}" alt="">` : '';
+    childRow.innerHTML = `${cphoto}<span>お子様：${p.childName}</span>`;
+  } else { childRow.innerHTML = ''; }
+
+  document.getElementById('calContainer').innerHTML = '<div class="no-records">読み込み中...</div>';
+  document.getElementById('detailModal').classList.add('show');
+
+  const snap = await db.collection('pickupRecords').where('parentId','==',parentId).get();
+  currentRecords = [];
+  snap.forEach(doc => currentRecords.push({ id: doc.id, ...doc.data() }));
+
+  // 最新月を初期表示
+  if (currentRecords.length) {
+    const latest = currentRecords.reduce((a,b) => (a.timestamp?.toMillis()||0) > (b.timestamp?.toMillis()||0) ? a : b);
+    if (latest.timestamp) { const d = latest.timestamp.toDate(); viewMonth = new Date(d.getFullYear(), d.getMonth(), 1); }
+  } else { viewMonth = new Date(); viewMonth.setDate(1); }
+
+  document.getElementById('modalCount').textContent = `累計 ${currentRecords.length} 回`;
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
+  document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
+
+  const byDate = {};
+  currentRecords.forEach(r => {
+    if (!r.timestamp) return;
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+    if (jst.getFullYear()!==year || jst.getMonth()!==month) return;
+    const d = jst.getDate();
+    const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(hm);
+  });
+
+  const firstDay = new Date(year,month,1).getDay();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const dayNames = ['日','月','火','水','木','金','土'];
+  const today = new Date();
+  let html = '<div class="cal-grid">';
+  dayNames.forEach((d,i) => { html += `<div class="cal-header ${i===0?'sun':i===6?'sat':''}">${d}</div>`; });
+  for (let i=0;i<firstDay;i++) html += '<div class="cal-cell empty"></div>';
+  for (let d=1;d<=daysInMonth;d++) {
+    const dow = (firstDay+d-1)%7;
+    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
+    const recs = byDate[d];
+    let cls = 'cal-cell';
+    if (dow===0) cls+=' sun'; if (dow===6) cls+=' sat';
+    if (isToday) cls+=' today'; if (recs) cls+=' has-record';
+    html += `<div class="${cls}"><div class="cal-day">${d}</div>`;
+    if (recs) recs.forEach(t => { html += `<div class="cal-pickup">🏠 ${t}</div>`; });
+    html += '</div>';
+  }
+  html += '</div>';
+  document.getElementById('calContainer').innerHTML = html;
+}
+
+function prevMonth() { viewMonth.setMonth(viewMonth.getMonth()-1); renderCalendar(); }
+function nextMonth() { viewMonth.setMonth(viewMonth.getMonth()+1); renderCalendar(); }
+function closeDetail() { document.getElementById('detailModal').classList.remove('show'); }
+document.getElementById('detailModal')?.addEventListener('click', function(e) { if(e.target===this) closeDetail(); });
+function openPhotoFull(src) { document.getElementById('photoFullImg').src=src; document.getElementById('photoFullModal').classList.add('show'); }
+function closePhotoFull() { document.getElementById('photoFullModal').classList.remove('show'); }
+</script>
+</body>
+</html>

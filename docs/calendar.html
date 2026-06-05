@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お迎えカレンダー | BLUE MOUSE</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bm-coral: #f2906c; --bm-coral-dark: #e87e59;
+      --bm-teal: #5ec1c6; --bm-cream: #fffdf7; --bm-ink: 40, 30, 24;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Hiragino Sans','Meiryo',sans-serif; background:var(--bm-cream); color:rgb(var(--bm-ink)); min-height:100vh; }
+
+    /* LOGIN */
+    #loginScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,rgb(var(--bm-ink)),#3d2518); }
+    .login-box { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:48px 40px; width:360px; text-align:center; }
+    .login-box img { width:150px; height:auto; margin-bottom:16px; }
+    .login-subtitle { font-size:13px; color:rgba(255,255,255,0.35); margin-bottom:28px; }
+    .login-input { width:100%; padding:13px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:var(--bm-cream); font-size:15px; text-align:center; letter-spacing:3px; outline:none; margin-bottom:14px; transition:border-color .2s; }
+    .login-input:focus { border-color:var(--bm-coral); }
+    .login-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,var(--bm-coral),var(--bm-coral-dark)); color:white; font-size:15px; font-weight:600; border:none; cursor:pointer; }
+    .login-error { color:#f87171; font-size:13px; margin-top:12px; display:none; }
+
+    /* HEADER */
+    #mainApp { display:none; }
+    .header { background:rgb(var(--bm-ink)); height:60px; padding:0 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(var(--bm-ink),.3); }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .header-left img { height:36px; width:auto; }
+    .header-title { font-size:14px; color:rgba(255,255,255,.38); }
+    .header-right { display:flex; gap:10px; align-items:center; }
+    .btn-header { padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; border:none; cursor:pointer; text-decoration:none; }
+    .btn-ghost { background:rgba(255,255,255,.07); color:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.1) !important; transition:background .2s; }
+    .btn-ghost:hover { background:rgba(255,255,255,.12); color:white; }
+
+    /* CONTENT */
+    .content { max-width:1000px; margin:0 auto; padding:36px 24px 60px; }
+
+    /* MONTH NAV */
+    .month-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+    .month-label { font-size:26px; font-weight:800; color:rgb(var(--bm-ink)); }
+    .month-controls { display:flex; align-items:center; gap:8px; }
+    .month-btn { background:white; border:1.5px solid rgba(var(--bm-ink),.1); border-radius:10px; width:38px; height:38px; font-size:15px; cursor:pointer; color:rgba(var(--bm-ink),.55); transition:background .2s; box-shadow:0 1px 4px rgba(var(--bm-ink),.06); }
+    .month-btn:hover { background:rgba(var(--bm-ink),.05); }
+    .today-btn { padding:8px 16px; border-radius:10px; background:rgba(242,144,108,.1); border:1px solid rgba(242,144,108,.3); color:var(--bm-coral-dark); font-size:13px; font-weight:700; cursor:pointer; transition:background .2s; }
+    .today-btn:hover { background:rgba(242,144,108,.18); }
+
+    /* LEGEND */
+    .legend { display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:rgba(var(--bm-ink),.5); }
+    .legend-dot { width:10px; height:10px; border-radius:50%; }
+
+    /* CALENDAR */
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-header { text-align:center; font-size:12px; font-weight:700; color:rgba(var(--bm-ink),.4); padding:10px 0; }
+    .cal-header.sun { color:#e05555; } .cal-header.sat { color:#3b82f6; }
+    .cal-cell {
+      min-height:120px; border-radius:14px; padding:10px 8px;
+      border:1.5px solid rgba(var(--bm-ink),.06); background:rgba(var(--bm-ink),.015);
+      cursor:default; transition:all .15s;
+    }
+    .cal-cell.empty { border:none; background:none; min-height:0; }
+    .cal-cell.has-record { background:white; border-color:rgba(var(--bm-ink),.1); box-shadow:0 2px 12px rgba(var(--bm-ink),.07); cursor:pointer; }
+    .cal-cell.has-record:hover { border-color:var(--bm-coral); box-shadow:0 6px 20px rgba(242,144,108,.15); transform:translateY(-1px); }
+    .cal-cell.today { border:2px solid var(--bm-coral) !important; background:rgba(242,144,108,.04); }
+    .cal-cell.sun .cal-day { color:#e05555; } .cal-cell.sat .cal-day { color:#3b82f6; }
+    .cal-day { font-size:14px; font-weight:800; color:rgba(var(--bm-ink),.7); margin-bottom:7px; }
+    .cal-day.today-num { color:var(--bm-coral); }
+    .pickup-chip {
+      display:flex; align-items:center; gap:5px;
+      padding:4px 7px; border-radius:7px; margin-bottom:4px;
+      background:rgba(242,144,108,.1); border:1px solid rgba(242,144,108,.2);
+      cursor:pointer; transition:background .15s;
+    }
+    .pickup-chip:hover { background:rgba(242,144,108,.2); }
+    .chip-photo { width:22px; height:22px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+    .chip-text { flex:1; min-width:0; }
+    .chip-name { font-size:10px; font-weight:700; color:rgb(var(--bm-ink)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chip-time { font-size:9px; color:rgba(var(--bm-ink),.45); }
+    .more-badge { font-size:10px; color:rgba(var(--bm-ink),.4); padding:2px 6px; background:rgba(var(--bm-ink),.05); border-radius:5px; }
+
+    /* DAY MODAL */
+    #dayModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; padding:20px; }
+    #dayModal.show { display:flex; }
+    .day-box { background:white; border-radius:24px; width:100%; max-width:480px; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.3); }
+    .day-header { background:linear-gradient(135deg,rgb(var(--bm-ink)),#3d2518); padding:18px 22px; display:flex; align-items:center; justify-content:space-between; }
+    .day-title { font-size:17px; font-weight:800; color:white; }
+    .day-count { font-size:12px; color:rgba(255,255,255,.45); background:rgba(255,255,255,.1); padding:4px 10px; border-radius:999px; }
+    .btn-day-close { background:rgba(255,255,255,.1); color:white; border:none; width:32px; height:32px; border-radius:8px; font-size:16px; cursor:pointer; }
+    .day-list { padding:16px; display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; }
+    .day-record { background:rgba(var(--bm-ink),.03); border:1px solid rgba(var(--bm-ink),.08); border-radius:14px; padding:14px; display:flex; align-items:center; gap:14px; }
+    .day-record-photo { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2.5px solid var(--bm-coral); flex-shrink:0; }
+    .day-record-info { flex:1; }
+    .day-record-name { font-size:15px; font-weight:800; color:rgb(var(--bm-ink)); }
+    .day-record-child { font-size:12px; color:rgba(var(--bm-ink),.45); margin-top:2px; }
+    .day-record-time { font-size:18px; font-weight:800; color:var(--bm-coral); margin-top:4px; }
+    .day-child-photo { width:36px; height:36px; border-radius:8px; object-fit:cover; border:2px solid rgba(94,193,198,.35); flex-shrink:0; }
+
+    /* LOADING */
+    #loadingBadge { position:fixed; bottom:24px; right:24px; background:rgb(var(--bm-ink)); color:rgba(255,255,255,.7); font-size:13px; padding:10px 18px; border-radius:999px; display:none; align-items:center; gap:8px; z-index:100; }
+    .mini-spin { width:14px; height:14px; border:2px solid rgba(255,255,255,.2); border-top-color:var(--bm-coral); border-radius:50%; animation:spin .7s linear infinite; flex-shrink:0; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="logo.webp" alt="BLUE MOUSE">
+    <div class="login-subtitle">管理者ページ — お迎えカレンダー</div>
+    <input type="password" class="login-input" id="adminPassword" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="login-btn" onclick="adminLogin()">ログイン</button>
+    <div class="login-error" id="loginError">パスワードが正しくありません</div>
+    <div style="margin-top:20px"><a href="index.html" style="color:rgba(255,255,255,.25);font-size:13px;text-decoration:none">← お迎え画面に戻る</a></div>
+  </div>
+</div>
+
+<div id="mainApp">
+  <div class="header">
+    <div class="header-left">
+      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE"></a>
+      <span class="header-title">お迎えカレンダー</span>
+    </div>
+    <div class="header-right">
+      <a href="parents.html" class="btn-header btn-ghost">👥 保護者一覧</a>
+      <a href="admin.html" class="btn-header btn-ghost">⚙️ 管理者</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="month-nav">
+      <div class="month-label" id="monthLabel">–</div>
+      <div class="month-controls">
+        <button class="month-btn" onclick="prevMonth()">◀</button>
+        <button class="today-btn" onclick="goToday()">今月</button>
+        <button class="month-btn" onclick="nextMonth()">▶</button>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--bm-coral)"></div>お迎えあり</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(var(--bm-ink),.12)"></div>お迎えなし</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+</div>
+
+<!-- 日付詳細モーダル -->
+<div id="dayModal">
+  <div class="day-box">
+    <div class="day-header">
+      <div>
+        <div class="day-title" id="dayModalTitle"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="day-count" id="dayModalCount"></span>
+        <button class="btn-day-close" onclick="closeDayModal()">✕</button>
+      </div>
+    </div>
+    <div class="day-list" id="dayList"></div>
+  </div>
+</div>
+
+<div id="loadingBadge"><div class="mini-spin"></div>読み込み中...</div>
+
+<script>
+const ADMIN_PASSWORD = '0218bass';
+const firebaseConfig = {
+  apiKey:"AIzaSyAxkP1UP8UQffk8PxMp1_PUKNYaqo63QfU",
+  authDomain:"bluemouse-dfd31.firebaseapp.com",
+  projectId:"bluemouse-dfd31",
+  storageBucket:"bluemouse-dfd31.firebasestorage.app",
+  messagingSenderId:"244172125496",
+  appId:"1:244172125496:web:117e6c1aeeaa056ba2bdcd"
+};
+
+let db, viewMonth = new Date(), parentMap = {}, allRecords = [];
+
+window.addEventListener('load', () => { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); });
+
+function adminLogin() {
+  const pw = document.getElementById('adminPassword').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    viewMonth = new Date(); viewMonth.setDate(1);
+    loadAll();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('adminPassword').value = '';
+  }
+}
+
+async function loadAll() {
+  setLoading(true);
+  // 保護者マップ
+  const pSnap = await db.collection('parents').get();
+  parentMap = {};
+  pSnap.forEach(doc => { parentMap[doc.id] = { id: doc.id, ...doc.data() }; });
+  // 全記録
+  const rSnap = await db.collection('pickupRecords').get();
+  allRecords = [];
+  rSnap.forEach(doc => allRecords.push({ id: doc.id, ...doc.data() }));
+  setLoading(false);
+  renderCalendar();
+}
+
+function setLoading(v) { document.getElementById('loadingBadge').style.display = v ? 'flex' : 'none'; }
+
+function renderCalendar() {
+  const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
+  document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
+
+  // 日付 → 記録[]
+  const byDate = {};
+  allRecords.forEach(r => {
+    if (!r.timestamp) return;
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+    if (jst.getFullYear()!==year || jst.getMonth()!==month) return;
+    const d = jst.getDate();
+    const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push({ ...r, hm });
+  });
+
+  const firstDay = new Date(year,month,1).getDay();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const dayNames = ['日','月','火','水','木','金','土'];
+  const today = new Date();
+  const todayKey = today.getFullYear()===year && today.getMonth()===month ? today.getDate() : -1;
+
+  let html = '';
+  dayNames.forEach((d,i) => { html += `<div class="cal-header ${i===0?'sun':i===6?'sat':''}">${d}</div>`; });
+  for (let i=0;i<firstDay;i++) html += '<div class="cal-cell empty"></div>';
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const dow = (firstDay+d-1)%7;
+    const recs = byDate[d] || [];
+    const isToday = d===todayKey;
+    let cls = 'cal-cell';
+    if (dow===0) cls+=' sun'; if (dow===6) cls+=' sat';
+    if (isToday) cls+=' today'; if (recs.length) cls+=' has-record';
+    const click = recs.length ? `onclick="openDayModal(${year},${month},${d})"` : '';
+    html += `<div class="${cls}" ${click}>`;
+    html += `<div class="cal-day${isToday?' today-num':''}">${d}</div>`;
+    if (recs.length) {
+      const show = recs.slice(0,3);
+      show.forEach(r => {
+        const p = parentMap[r.parentId] || {};
+        const photo = p.photoBase64 || avatar(p.name||'?');
+        html += `<div class="pickup-chip">
+          <img class="chip-photo" src="${photo}" alt="">
+          <div class="chip-text">
+            <div class="chip-name">${p.name||'不明'}</div>
+            <div class="chip-time">${r.hm}</div>
+          </div>
+        </div>`;
+      });
+      if (recs.length > 3) html += `<div class="more-badge">他 ${recs.length-3} 件</div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function openDayModal(year, month, day) {
+  const dayNames=['日','月','火','水','木','金','土'];
+  const dow = new Date(year,month,day).getDay();
+  document.getElementById('dayModalTitle').textContent = `${year}年${month+1}月${day}日（${dayNames[dow]}）`;
+
+  const recs = allRecords.filter(r => {
+    if (!r.timestamp) return false;
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+    return jst.getFullYear()===year && jst.getMonth()===month && jst.getDate()===day;
+  }).sort((a,b) => (a.timestamp?.toMillis()||0)-(b.timestamp?.toMillis()||0));
+
+  document.getElementById('dayModalCount').textContent = `${recs.length} 件`;
+
+  let html = '';
+  recs.forEach(r => {
+    const jst = new Date(r.timestamp.toDate().toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+    const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
+    const p = parentMap[r.parentId] || {};
+    const photo = p.photoBase64 || avatar(p.name||'?');
+    let childPhotoHtml = '';
+    if (p.childPhotoBase64) childPhotoHtml = `<img class="day-child-photo" src="${p.childPhotoBase64}" alt="">`;
+    html += `<div class="day-record">
+      <img class="day-record-photo" src="${photo}" alt="">
+      <div class="day-record-info">
+        <div class="day-record-name">${p.name||r.parentName||'不明'}</div>
+        <div class="day-record-child">${p.childName||r.childName ? 'お子様：'+(p.childName||r.childName) : ''}</div>
+        <div class="day-record-time">${hm}</div>
+      </div>
+      ${childPhotoHtml}
+    </div>`;
+  });
+  document.getElementById('dayList').innerHTML = html || '<div style="padding:20px;text-align:center;color:rgba(40,30,24,.3)">記録がありません</div>';
+  document.getElementById('dayModal').classList.add('show');
+}
+
+function closeDayModal() { document.getElementById('dayModal').classList.remove('show'); }
+document.getElementById('dayModal')?.addEventListener('click', function(e) { if(e.target===this) closeDayModal(); });
+
+function prevMonth() { viewMonth.setMonth(viewMonth.getMonth()-1); renderCalendar(); }
+function nextMonth() { viewMonth.setMonth(viewMonth.getMonth()+1); renderCalendar(); }
+function goToday() { viewMonth = new Date(); viewMonth.setDate(1); renderCalendar(); }
+
+function avatar(name) {
+  const c = name ? name.charAt(0) : '?';
+  return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
+}
+</script>
+</body>
+</html>
