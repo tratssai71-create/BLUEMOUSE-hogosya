@@ -634,7 +634,14 @@ async function saveParent() {
     document.getElementById('btnSave').style.background = 'linear-gradient(135deg,#34d399,#059669)';
     setTimeout(() => { window.location.href = 'index.html'; }, 1500);
   } catch(e) {
-    alert('登録に失敗しました: ' + e.message);
+    console.error('登録エラー詳細:', e);
+    let msg = e.message || '不明なエラー';
+    if (e.code === 'permission-denied') {
+      msg = 'Firestoreのアクセス権限がありません。\nFirebaseコンソールでルールを確認してください。\n\n【修正方法】\nFirebase Console → Firestore → ルール\n「allow read, write: if true;」に変更してください。';
+    } else if (msg.includes('quota') || msg.includes('exceed')) {
+      msg = 'データサイズが大きすぎます。写真を小さくして再試行してください。';
+    }
+    alert('登録に失敗しました\n\n' + msg);
     document.getElementById('btnSave').disabled = false;
     document.getElementById('btnSave').textContent = '登録する';
   }
