@@ -138,6 +138,68 @@
     .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--bm-coral); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 14px; color: rgba(255,255,255,0.4); }
+
+    /* Checklist Modal */
+    #checklistOverlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      align-items: center; justify-content: center; z-index: 200; padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    #checklistOverlay.show { display: flex; }
+    .checklist-modal {
+      background: var(--bm-cream); border-radius: 24px; width: min(420px, 95vw);
+      overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      animation: modalIn 0.25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes modalIn { from { opacity:0; transform:scale(0.88) translateY(20px); } to { opacity:1; transform:none; } }
+    .checklist-header {
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      padding: 20px 24px; color: white;
+    }
+    .checklist-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.4); flex-shrink: 0; }
+    .checklist-header h2 { font-size: 17px; font-weight: 800; }
+    .checklist-header p { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+    .checklist-subtitle { font-size: 13px; opacity: 0.8; margin-top: 10px; }
+    .checklist-body { padding: 20px 24px; }
+    .checklist-items { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .checklist-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; border-radius: 14px; cursor: pointer;
+      border: 2px solid rgba(var(--bm-ink),0.08); background: white;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .checklist-item.checked {
+      border-color: var(--bm-teal); background: rgba(94,193,198,0.07);
+    }
+    .checklist-check {
+      width: 26px; height: 26px; border-radius: 8px; border: 2.5px solid rgba(var(--bm-ink),0.2);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; transition: all 0.2s;
+    }
+    .checklist-item.checked .checklist-check {
+      background: var(--bm-teal); border-color: var(--bm-teal); color: white;
+    }
+    .checklist-item-text { font-size: 16px; font-weight: 600; color: rgb(var(--bm-ink)); }
+    .checklist-item.checked .checklist-item-text { color: rgba(var(--bm-ink),0.5); text-decoration: line-through; }
+    .checklist-progress { font-size: 12px; color: rgba(var(--bm-ink),0.4); text-align: right; margin-bottom: 14px; }
+    .checklist-actions { display: flex; gap: 10px; }
+    .btn-checklist-cancel {
+      flex: 1; padding: 14px; border-radius: 12px; border: 2px solid rgba(var(--bm-ink),0.12);
+      background: white; color: rgba(var(--bm-ink),0.6); font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-checklist-cancel:hover { background: rgba(var(--bm-ink),0.04); }
+    .btn-checklist-confirm {
+      flex: 2; padding: 14px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
+      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(242,144,108,0.35);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-checklist-confirm:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+    .btn-checklist-confirm:not(:disabled):hover { transform: translateY(-1px); }
   </style>
 </head>
 <body>
@@ -201,6 +263,35 @@
     <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
   </div>
   <a href="register.html?noauth=1" class="add-parent-link">＋ 保護者様を追加する</a>
+</div>
+
+<!-- チェックリストモーダル -->
+<div id="checklistOverlay">
+  <div class="checklist-modal">
+    <div class="checklist-header">
+      <div class="checklist-header-top">
+        <img class="checklist-parent-photo" id="checklistPhoto" src="" alt="">
+        <div>
+          <div class="checklist-header h2" id="checklistName" style="font-size:17px;font-weight:800;"></div>
+          <div style="font-size:13px;opacity:0.75;" id="checklistChild"></div>
+        </div>
+      </div>
+      <div class="checklist-subtitle">お迎え前に以下の項目をご確認ください</div>
+    </div>
+    <div class="checklist-body">
+      <div class="checklist-progress" id="checklistProgress">0 / 1 完了</div>
+      <ul class="checklist-items" id="checklistItems">
+        <li class="checklist-item" onclick="toggleCheck(this)">
+          <div class="checklist-check"></div>
+          <div class="checklist-item-text">🌡️ お熱を測りましたか？</div>
+        </li>
+      </ul>
+      <div class="checklist-actions">
+        <button class="btn-checklist-cancel" onclick="closeChecklist()">キャンセル</button>
+        <button class="btn-checklist-confirm" id="btnConfirmPickup" disabled onclick="confirmPickup()">✓ お迎え完了</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- サンクス画面 -->
@@ -341,8 +432,37 @@ function generateAvatar(name) {
   return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
 }
 
-async function recordPickup() {
+function recordPickup() {
   if (!currentParent) return;
+  // チェックリストモーダルを開く
+  document.getElementById('checklistPhoto').src = currentParent.photo || generateAvatar(currentParent.name);
+  document.getElementById('checklistName').textContent = currentParent.name + ' さん';
+  document.getElementById('checklistChild').textContent = currentParent.childName ? `お子様：${currentParent.childName}` : '';
+  // チェックをリセット
+  document.querySelectorAll('#checklistItems .checklist-item').forEach(item => item.classList.remove('checked'));
+  updateChecklistProgress();
+  document.getElementById('checklistOverlay').classList.add('show');
+}
+
+function toggleCheck(item) {
+  item.classList.toggle('checked');
+  updateChecklistProgress();
+}
+
+function updateChecklistProgress() {
+  const items = document.querySelectorAll('#checklistItems .checklist-item');
+  const checked = document.querySelectorAll('#checklistItems .checklist-item.checked');
+  document.getElementById('checklistProgress').textContent = `${checked.length} / ${items.length} 完了`;
+  document.getElementById('btnConfirmPickup').disabled = checked.length < items.length;
+}
+
+function closeChecklist() {
+  document.getElementById('checklistOverlay').classList.remove('show');
+}
+
+async function confirmPickup() {
+  if (!currentParent) return;
+  closeChecklist();
   const parent = { ...currentParent };
   document.getElementById('btnPickup').disabled = true;
   const photo = capturePhoto();
