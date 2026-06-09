@@ -493,10 +493,8 @@ async function shootCam(who) {
     state.parent.faceDescriptor = descriptor;
     setStatus('parent', 'success', '✓ 顔認証データ取得完了');
   } else {
-    // 子供はそのままクロップ（顔検出なしでもOK）
-    const c2 = document.createElement('canvas'); c2.width = 300; c2.height = 300;
-    c2.getContext('2d').drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, 300, 300);
-    state.child.photoB64 = c2.toDataURL('image/jpeg', 0.8);
+    // 子供は中央クロップ（アスペクト比を保って正方形に）
+    state.child.photoB64 = centerCrop(canvas, 300);
     setStatus('child', 'success', '✓ 写真撮影完了');
   }
 
@@ -560,9 +558,7 @@ async function uploadPhoto(event, who) {
     setStatus('parent', 'success', '✓ 顔認証データ取得完了');
     showCaptured('parent', photoB64);
   } else {
-    const c2 = document.createElement('canvas'); c2.width=300; c2.height=300;
-    c2.getContext('2d').drawImage(canvas,0,0,canvas.width,canvas.height,0,0,300,300);
-    state.child.photoB64 = c2.toDataURL('image/jpeg', 0.8);
+    state.child.photoB64 = centerCrop(canvas, 300);
     setStatus('child', 'success', '✓ 写真登録完了');
     showCaptured('child', state.child.photoB64);
   }
@@ -584,6 +580,15 @@ function loadImageFile(file) {
     reader.onload = e => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = e.target.result; };
     reader.readAsDataURL(file);
   });
+}
+
+function centerCrop(canvas, size) {
+  const s = Math.min(canvas.width, canvas.height);
+  const sx = (canvas.width - s) / 2;
+  const sy = (canvas.height - s) / 2;
+  const c2 = document.createElement('canvas'); c2.width = size; c2.height = size;
+  c2.getContext('2d').drawImage(canvas, sx, sy, s, s, 0, 0, size, size);
+  return c2.toDataURL('image/jpeg', 0.8);
 }
 
 function cropFace(canvas, det) {
