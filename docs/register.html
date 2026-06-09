@@ -19,12 +19,25 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
+    /* ADMIN SIDEBAR */
+    .admin-sidebar { position:fixed; left:0; top:0; bottom:0; width:200px; background:rgba(var(--bm-ink),.98); border-right:1px solid rgba(255,255,255,.08); padding:20px 0; z-index:40; display:none; flex-direction:column; }
+    .admin-sidebar.show { display:flex; }
+    .asb-logo { padding:0 16px 20px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:8px; }
+    .asb-logo img { width:100px; height:auto; display:block; }
+    .asb-logo .sub { font-size:10px; color:rgba(255,255,255,.28); margin-top:4px; }
+    .asb-link { display:flex; align-items:center; gap:10px; padding:11px 16px; color:rgba(255,255,255,.5); text-decoration:none; font-size:13px; transition:background .2s,color .2s; border-left:3px solid transparent; }
+    .asb-link:hover { background:rgba(255,255,255,.05); color:white; }
+    .asb-link.active { background:rgba(255,255,255,.08); color:white; border-left-color:var(--bm-coral); }
+    .asb-link .icon { font-size:16px; }
+    .asb-divider { border:none; border-top:1px solid rgba(255,255,255,.07); margin:8px 0; }
+
     /* HEADER */
     .header {
       background: rgb(var(--bm-ink)); padding: 0 24px; height: 60px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 50;
       box-shadow: 0 2px 16px rgba(var(--bm-ink),0.3);
+      margin-left: 200px;
     }
     .header-left { display: flex; align-items: center; gap: 12px; }
     .header-left img { height: 36px; width: auto; display: block; }
@@ -39,7 +52,7 @@
     /* PROGRESS STEPS */
     .progress-wrap {
       background: white; border-bottom: 1px solid rgba(var(--bm-ink),0.06);
-      padding: 20px 24px;
+      padding: 20px 24px; margin-left: 200px;
     }
     .progress-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 0; }
     .step {
@@ -76,7 +89,7 @@
     .step.done .step-label { color: rgba(var(--bm-ink),0.55); }
 
     /* CONTENT */
-    .content { max-width: 680px; margin: 0 auto; padding: 32px 24px 60px; }
+    .content { max-width: 680px; margin: 0 auto; padding: 32px 24px 60px; margin-left: 200px; }
 
     /* SECTION CARD */
     .card {
@@ -236,10 +249,23 @@
 </div>
 
 <div id="mainContent" style="display:none">
+  <!-- 左サイドバー -->
+  <div class="admin-sidebar show">
+    <div class="asb-logo">
+      <img src="logo.webp" alt="BLUE MOUSE">
+      <div class="sub">管理メニュー</div>
+    </div>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="parents.html" class="asb-link"><span class="icon">👥</span> 保護者一覧</a>
+    <a href="calendar.html" class="asb-link"><span class="icon">📅</span> カレンダー</a>
+    <hr class="asb-divider">
+    <a href="register.html" class="asb-link active"><span class="icon">➕</span> 保護者を追加</a>
+    <a href="admin.html" class="asb-link"><span class="icon">⚙️</span> 管理者ページ</a>
+  </div>
+
   <div class="header">
     <div class="header-left">
-      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE"></a>
-      <span class="header-title">保護者登録</span>
+      <span class="header-title">➕ 保護者登録</span>
     </div>
     <a href="index.html" class="back-link">← 戻る</a>
   </div>

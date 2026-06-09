@@ -46,12 +46,34 @@
     }
     .login-error { color: #f87171; font-size: 13px; margin-top: 12px; display: none; }
 
+    /* ADMIN SIDEBAR */
+    .admin-sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 200px;
+      background: rgba(var(--bm-ink), 0.98);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 20px 0; z-index: 40;
+      display: none; flex-direction: column;
+    }
+    .admin-sidebar.show { display: flex; }
+    .asb-logo { padding: 0 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; }
+    .asb-logo img { width: 100px; height: auto; display: block; }
+    .asb-logo .sub { font-size: 10px; color: rgba(255,255,255,0.28); margin-top: 4px; }
+    .asb-link { display: flex; align-items: center; gap: 10px; padding: 11px 16px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 13px; transition: background 0.2s, color 0.2s; border-left: 3px solid transparent; }
+    .asb-link:hover { background: rgba(255,255,255,0.05); color: white; }
+    .asb-link.active { background: rgba(255,255,255,0.08); color: white; border-left-color: var(--bm-coral); }
+    .asb-link .icon { font-size: 16px; }
+    .asb-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 8px 0; }
+    .asb-logout { margin-top: auto; padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.07); }
+    .asb-logout-btn { width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer; transition: background 0.2s; }
+    .asb-logout-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
     /* HEADER */
     #mainApp { display: none; }
     .header {
       background: rgb(var(--bm-ink)); color: white; padding: 0 24px; height: 60px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 12px rgba(var(--bm-ink),0.3);
+      margin-left: 200px;
     }
     .header-left { display: flex; align-items: center; gap: 12px; }
     .header-logo img { height: 42px; width: auto; }
@@ -71,7 +93,7 @@
     .btn-logout:hover { background: rgba(255,255,255,0.12); color: white; }
 
     /* CONTENT */
-    .content { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+    .content { max-width: 1100px; margin: 0 auto; padding: 32px 24px; margin-left: 200px; }
     .section-title { font-size: 12px; font-weight: 700; color: rgba(var(--bm-ink),0.38); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
 
     /* PARENT GRID */
@@ -169,14 +191,29 @@
 </div>
 
 <div id="mainApp">
+  <!-- 左サイドバー -->
+  <div class="admin-sidebar show" id="adminSidebar">
+    <div class="asb-logo">
+      <img src="logo.webp" alt="BLUE MOUSE">
+      <div class="sub">管理メニュー</div>
+    </div>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="parents.html" class="asb-link"><span class="icon">👥</span> 保護者一覧</a>
+    <a href="calendar.html" class="asb-link"><span class="icon">📅</span> カレンダー</a>
+    <hr class="asb-divider">
+    <a href="register.html" class="asb-link"><span class="icon">➕</span> 保護者を追加</a>
+    <a href="admin.html" class="asb-link active"><span class="icon">⚙️</span> 管理者ページ</a>
+    <div class="asb-logout">
+      <button class="asb-logout-btn" onclick="adminLogout()">🚪 ログアウト</button>
+    </div>
+  </div>
+
   <div class="header">
     <div class="header-left">
-      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" style="height:42px;width:auto;display:block;"></a>
-      <span class="header-title">管理者ページ</span>
+      <span class="header-title">⚙️ 管理者ページ</span>
     </div>
     <div class="header-right">
       <a href="register.html" class="btn-add">＋ 保護者追加</a>
-      <button class="btn-logout" onclick="adminLogout()">ログアウト</button>
     </div>
   </div>
 

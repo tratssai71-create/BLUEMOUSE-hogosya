@@ -24,9 +24,21 @@
     .login-btn { width:100%; padding:13px; border-radius:10px; background:linear-gradient(135deg,var(--bm-coral),var(--bm-coral-dark)); color:white; font-size:15px; font-weight:600; border:none; cursor:pointer; }
     .login-error { color:#f87171; font-size:13px; margin-top:12px; display:none; }
 
+    /* ADMIN SIDEBAR */
+    .admin-sidebar { position:fixed; left:0; top:0; bottom:0; width:200px; background:rgba(var(--bm-ink),.98); border-right:1px solid rgba(255,255,255,.08); padding:20px 0; z-index:40; display:none; flex-direction:column; }
+    .admin-sidebar.show { display:flex; }
+    .asb-logo { padding:0 16px 20px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:8px; }
+    .asb-logo img { width:100px; height:auto; display:block; }
+    .asb-logo .sub { font-size:10px; color:rgba(255,255,255,.28); margin-top:4px; }
+    .asb-link { display:flex; align-items:center; gap:10px; padding:11px 16px; color:rgba(255,255,255,.5); text-decoration:none; font-size:13px; transition:background .2s,color .2s; border-left:3px solid transparent; }
+    .asb-link:hover { background:rgba(255,255,255,.05); color:white; }
+    .asb-link.active { background:rgba(255,255,255,.08); color:white; border-left-color:var(--bm-coral); }
+    .asb-link .icon { font-size:16px; }
+    .asb-divider { border:none; border-top:1px solid rgba(255,255,255,.07); margin:8px 0; }
+
     /* HEADER */
     #mainApp { display:none; }
-    .header { background:rgb(var(--bm-ink)); height:60px; padding:0 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(var(--bm-ink),.3); }
+    .header { background:rgb(var(--bm-ink)); height:60px; padding:0 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(var(--bm-ink),.3); margin-left:200px; }
     .header-left { display:flex; align-items:center; gap:12px; }
     .header-left img { height:36px; width:auto; }
     .header-title { font-size:14px; color:rgba(255,255,255,.38); }
@@ -37,7 +49,7 @@
     .btn-ghost:hover { background:rgba(255,255,255,.12); color:white; }
 
     /* CONTENT */
-    .content { max-width:1100px; margin:0 auto; padding:36px 24px 60px; }
+    .content { max-width:1100px; margin:0 auto; padding:36px 24px 60px; margin-left:200px; }
     .page-title { font-size:22px; font-weight:800; color:rgb(var(--bm-ink)); margin-bottom:6px; }
     .page-sub { font-size:13px; color:rgba(var(--bm-ink),.4); margin-bottom:32px; }
 
@@ -115,15 +127,26 @@
 </div>
 
 <div id="mainApp">
+  <!-- 左サイドバー -->
+  <div class="admin-sidebar show">
+    <div class="asb-logo">
+      <img src="logo.webp" alt="BLUE MOUSE">
+      <div class="sub">管理メニュー</div>
+    </div>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="parents.html" class="asb-link active"><span class="icon">👥</span> 保護者一覧</a>
+    <a href="calendar.html" class="asb-link"><span class="icon">📅</span> カレンダー</a>
+    <hr class="asb-divider">
+    <a href="register.html" class="asb-link"><span class="icon">➕</span> 保護者を追加</a>
+    <a href="admin.html" class="asb-link"><span class="icon">⚙️</span> 管理者ページ</a>
+  </div>
+
   <div class="header">
     <div class="header-left">
-      <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE"></a>
-      <span class="header-title">保護者一覧</span>
+      <span class="header-title">👥 保護者一覧</span>
     </div>
     <div class="header-right">
       <a href="register.html?noauth=1" class="btn-header btn-add">＋ 保護者追加</a>
-      <a href="calendar.html" class="btn-header btn-ghost">📅 カレンダー</a>
-      <a href="admin.html" class="btn-header btn-ghost">⚙️ 管理者</a>
     </div>
   </div>
 
