@@ -19,38 +19,17 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
-    /* Sidebar */
-    #sidebar {
-      position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
-      background: rgba(var(--bm-ink), 0.97); backdrop-filter: blur(20px);
-      border-right: 1px solid rgba(255,255,255,0.08);
-      padding: 24px 0; transform: translateX(-220px); transition: transform 0.3s ease; z-index: 100;
-    }
-    #sidebar.open { transform: translateX(0); }
-    .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .sidebar-logo img { width: 110px; height: auto; }
-    .sidebar-logo .sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; }
-    .sidebar-nav { padding: 16px 0; }
-    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 12px 20px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: background 0.2s, color 0.2s; cursor: pointer; }
-    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
-    .sidebar-link .icon { font-size: 17px; }
-    #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
-    #sidebarOverlay.show { display: block; }
-
     /* Topbar */
     .topbar {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      position: fixed; top: 0; left: 0; right: 0; height: 52px;
       background: rgba(var(--bm-ink), 0.97);
       border-bottom: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; padding: 0 16px; z-index: 50;
+      display: flex; align-items: center; justify-content: center; padding: 0 16px; z-index: 50;
     }
-    .menu-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background 0.2s; }
-    .menu-btn:hover { background: rgba(255,255,255,0.1); }
-    .topbar-logo { height: 34px; width: auto; margin-left: 12px; display: block; }
-    .topbar a { display: flex; align-items: center; line-height: 0; }
+    .topbar-logo { height: 30px; width: auto; display: block; }
 
     /* Clock Screen */
-    #clockScreen { padding-top: 56px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
+    #clockScreen { padding-top: 52px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
     .clock-time-section { text-align: center; padding: 18px 20px 14px; }
     .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: rgb(var(--bm-ink)); }
     .clock-date { font-size: 20px; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
@@ -209,24 +188,8 @@
   <div class="loading-text" id="loadingText">起動中...</div>
 </div>
 
-<div id="sidebarOverlay" onclick="closeSidebar()"></div>
-<div id="sidebar">
-  <div class="sidebar-logo">
-    <img src="logo.webp" alt="BLUE MOUSE">
-    <div class="sub">お迎え記録システム</div>
-  </div>
-  <nav class="sidebar-nav">
-    <span class="sidebar-link" onclick="closeSidebar()"><span class="icon">🏠</span> お迎え画面</span>
-    <a href="parents.html" class="sidebar-link"><span class="icon">👥</span> 保護者一覧</a>
-    <a href="calendar.html" class="sidebar-link"><span class="icon">📅</span> カレンダー</a>
-    <a href="register.html?noauth=1" class="sidebar-link"><span class="icon">➕</span> 保護者を追加</a>
-    <a href="admin.html" class="sidebar-link"><span class="icon">⚙️</span> 管理者ページ</a>
-  </nav>
-</div>
-
 <div class="topbar">
-  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-  <a href="index.html"><img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo"></a>
+  <img src="logo.webp" alt="BLUE MOUSE" class="topbar-logo">
 </div>
 
 <!-- お迎え画面 -->
@@ -351,9 +314,6 @@ function startClock(tId, dId) {
   };
   update(); setInterval(update, 1000);
 }
-
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('show'); }
 
 async function startCamera() {
   try {
