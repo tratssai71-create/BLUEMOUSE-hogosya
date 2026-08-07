@@ -104,7 +104,9 @@
     .cal-cell.has-record { background:white; border-color:rgba(var(--bm-ink),.1); box-shadow:0 2px 8px rgba(var(--bm-ink),.07); }
     .cal-cell.sun .cal-day { color:#e05555; } .cal-cell.sat .cal-day { color:#3b82f6; }
     .cal-day { font-size:13px; font-weight:700; color:rgba(var(--bm-ink),.7); margin-bottom:5px; }
+    /* 既定（コーラル）＝退所。来所は青緑にして一目で分かるようにする */
     .cal-pickup { font-size:10px; font-weight:700; color:var(--bm-coral-dark); background:rgba(242,144,108,.12); border:1px solid rgba(242,144,108,.25); padding:2px 6px; border-radius:5px; display:inline-block; margin-bottom:2px; white-space:nowrap; }
+    .cal-pickup--in { color:#2c6e72; background:rgba(95,193,199,.12); border-color:rgba(95,193,199,.32); }
     .no-records { text-align:center; padding:40px; color:rgba(var(--bm-ink),.3); }
 
     /* PHOTO FULL */
@@ -133,7 +135,7 @@
       <img src="logo.webp" alt="BLUE MOUSE">
       <div class="sub">管理メニュー</div>
     </div>
-    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> 入退所画面</a>
     <a href="parents.html" class="asb-link active"><span class="icon">👥</span> 保護者一覧</a>
     <a href="calendar.html" class="asb-link"><span class="icon">📅</span> カレンダー</a>
     <hr class="asb-divider">
@@ -291,6 +293,10 @@ async function openDetail(parentId) {
   renderCalendar();
 }
 
+/* type を持たない記録は、区分を分ける前に作られたお迎えの記録なので退所として扱う */
+const visitTypeOf = r => r.type === 'arrival' ? 'arrival' : 'departure';
+const VISIT_SHORT = { arrival: '来', departure: '退' };
+
 function renderCalendar() {
   const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
   document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
@@ -303,8 +309,9 @@ function renderCalendar() {
     const d = jst.getDate();
     const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
     if (!byDate[d]) byDate[d] = [];
-    byDate[d].push(hm);
+    byDate[d].push({ hm, type: visitTypeOf(r) });
   });
+  Object.values(byDate).forEach(list => list.sort((a,b) => a.hm.localeCompare(b.hm)));
 
   const firstDay = new Date(year,month,1).getDay();
   const daysInMonth = new Date(year,month+1,0).getDate();
@@ -321,7 +328,9 @@ function renderCalendar() {
     if (dow===0) cls+=' sun'; if (dow===6) cls+=' sat';
     if (isToday) cls+=' today'; if (recs) cls+=' has-record';
     html += `<div class="${cls}"><div class="cal-day">${d}</div>`;
-    if (recs) recs.forEach(t => { html += `<div class="cal-pickup">🏠 ${t}</div>`; });
+    if (recs) recs.forEach(t => {
+      html += `<div class="cal-pickup${t.type === 'arrival' ? ' cal-pickup--in' : ''}">${VISIT_SHORT[t.type]} ${t.hm}</div>`;
+    });
     html += '</div>';
   }
   html += '</div>';

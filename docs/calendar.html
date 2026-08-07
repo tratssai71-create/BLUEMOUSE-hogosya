@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>お迎えカレンダー | BLUE MOUSE</title>
+  <title>入退所カレンダー | BLUE MOUSE</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -91,6 +91,10 @@
     .chip-text { flex:1; min-width:0; }
     .chip-name { font-size:10px; font-weight:700; color:rgb(var(--bm-ink)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .chip-time { font-size:9px; color:rgba(var(--bm-ink),.45); }
+    /* 来所／退所の区別。既定（コーラル）＝退所、来所は青緑 */
+    .visit-tag { font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px; margin-right:4px;
+                 color:var(--bm-coral-dark); background:rgba(242,144,108,.14); }
+    .visit-tag--in { color:#2c6e72; background:rgba(95,193,199,.16); }
     .more-badge { font-size:10px; color:rgba(var(--bm-ink),.4); padding:2px 6px; background:rgba(var(--bm-ink),.05); border-radius:5px; }
 
     /* DAY MODAL */
@@ -121,7 +125,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <img src="logo.webp" alt="BLUE MOUSE">
-    <div class="login-subtitle">管理者ページ — お迎えカレンダー</div>
+    <div class="login-subtitle">管理者ページ — 入退所カレンダー</div>
     <input type="password" class="login-input" id="adminPassword" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLogin()">
     <button class="login-btn" onclick="adminLogin()">ログイン</button>
     <div class="login-error" id="loginError">パスワードが正しくありません</div>
@@ -136,7 +140,7 @@
       <img src="logo.webp" alt="BLUE MOUSE">
       <div class="sub">管理メニュー</div>
     </div>
-    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> 入退所画面</a>
     <a href="parents.html" class="asb-link"><span class="icon">👥</span> 保護者一覧</a>
     <a href="calendar.html" class="asb-link active"><span class="icon">📅</span> カレンダー</a>
     <hr class="asb-divider">
@@ -146,7 +150,7 @@
 
   <div class="header">
     <div class="header-left">
-      <span class="header-title">📅 お迎えカレンダー</span>
+      <span class="header-title">📅 入退所カレンダー</span>
     </div>
     <div class="header-right"></div>
   </div>
@@ -161,8 +165,8 @@
       </div>
     </div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--bm-coral)"></div>お迎えあり</div>
-      <div class="legend-item"><div class="legend-dot" style="background:rgba(var(--bm-ink),.12)"></div>お迎えなし</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--bm-coral)"></div>記録あり</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(var(--bm-ink),.12)"></div>記録なし</div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
   </div>
@@ -230,6 +234,11 @@ async function loadAll() {
 
 function setLoading(v) { document.getElementById('loadingBadge').style.display = v ? 'flex' : 'none'; }
 
+/* type を持たない記録は、区分を分ける前に作られたお迎えの記録なので退所として扱う */
+const visitTypeOf = r => r.type === 'arrival' ? 'arrival' : 'departure';
+const VISIT_LABEL = { arrival: '来所', departure: '退所' };
+const VISIT_SHORT = { arrival: '来', departure: '退' };
+
 function renderCalendar() {
   const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
   document.getElementById('monthLabel').textContent = `${year}年${month+1}月`;
@@ -275,7 +284,7 @@ function renderCalendar() {
           <img class="chip-photo" src="${photo}" alt="">
           <div class="chip-text">
             <div class="chip-name">${p.name||'不明'}</div>
-            <div class="chip-time">${r.hm}</div>
+            <div class="chip-time"><span class="visit-tag${visitTypeOf(r) === 'arrival' ? ' visit-tag--in' : ''}">${VISIT_SHORT[visitTypeOf(r)]}</span>${r.hm}</div>
           </div>
         </div>`;
       });
@@ -312,7 +321,7 @@ function openDayModal(year, month, day) {
       <div class="day-record-info">
         <div class="day-record-name">${p.name||r.parentName||'不明'}</div>
         <div class="day-record-child">${p.childName||r.childName ? 'お子様：'+(p.childName||r.childName) : ''}</div>
-        <div class="day-record-time">${hm}</div>
+        <div class="day-record-time"><span class="visit-tag${visitTypeOf(r) === 'arrival' ? ' visit-tag--in' : ''}">${VISIT_LABEL[visitTypeOf(r)]}</span>${hm}</div>
       </div>
       ${childPhotoHtml}
     </div>`;

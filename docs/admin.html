@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理者ページ | BLUE MOUSE お迎え記録</title>
+  <title>管理者ページ | BLUE MOUSE 入退所記録</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
@@ -146,7 +146,12 @@
     .staff-child-sm { font-size: 11px; color: rgba(var(--bm-ink),0.4); }
     .td-day { padding: 8px 4px; text-align: center; border-bottom: 1px solid rgba(var(--bm-ink),0.05); vertical-align: middle; }
     .td-day.today { background: rgba(242,144,108,0.04); }
+    /* 既定（コーラル）＝退所。来所は青緑にして一目で分かるようにする */
     .pickup-badge { font-size: 11px; font-weight: 700; color: var(--bm-coral-dark); background: rgba(242,144,108,0.12); border: 1px solid rgba(242,144,108,0.25); padding: 3px 8px; border-radius: 6px; display: inline-block; white-space: nowrap; }
+    .pickup-badge + .pickup-badge { margin-top: 3px; }
+    .pickup-badge--in { color: #2c6e72; background: rgba(95,193,199,0.12); border-color: rgba(95,193,199,0.32); }
+    .visit-legend { display: flex; gap: 14px; align-items: center; font-size: 12px; color: rgba(var(--bm-ink),0.45); margin-top: 6px; }
+    .visit-legend .pickup-badge { font-size: 10px; }
     .empty-cell { color: rgba(var(--bm-ink),0.15); font-size: 14px; }
     .summary-table tbody tr:hover .td-name,
     .summary-table tbody tr:hover .td-day { background: rgba(var(--bm-ink),0.02); }
@@ -182,7 +187,7 @@
 <div id="loginScreen">
   <div class="login-box">
     <img src="logo.webp" alt="BLUE MOUSE">
-    <div class="login-subtitle">管理者ページ — お迎え記録システム</div>
+    <div class="login-subtitle">管理者ページ — 入退所記録システム</div>
     <input type="password" class="login-input" id="adminPassword" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLogin()">
     <button class="login-btn" onclick="adminLogin()">ログイン</button>
     <div class="login-error" id="loginError">パスワードが正しくありません</div>
@@ -197,7 +202,7 @@
       <img src="logo.webp" alt="BLUE MOUSE">
       <div class="sub">管理メニュー</div>
     </div>
-    <a href="index.html" class="asb-link"><span class="icon">🏠</span> お迎え画面</a>
+    <a href="index.html" class="asb-link"><span class="icon">🏠</span> 入退所画面</a>
     <a href="parents.html" class="asb-link"><span class="icon">👥</span> 保護者一覧</a>
     <a href="calendar.html" class="asb-link"><span class="icon">📅</span> カレンダー</a>
     <hr class="asb-divider">
@@ -225,7 +230,13 @@
 
     <div class="summary-section">
       <div class="section-header">
-        <div class="section-header-title">週別お迎えサマリー</div>
+        <div>
+          <div class="section-header-title">週別 入退所サマリー</div>
+          <div class="visit-legend">
+            <span><span class="pickup-badge pickup-badge--in">来 09:15</span> 来所</span>
+            <span><span class="pickup-badge">退 15:30</span> 退所</span>
+          </div>
+        </div>
         <div class="week-nav">
           <button class="week-btn" onclick="weekPrev()">◀</button>
           <span class="week-label" id="weekLabel">–</span>
@@ -240,7 +251,7 @@
 
     <div class="history-section">
       <div class="section-header">
-        <div class="section-header-title">お迎え履歴</div>
+        <div class="section-header-title">入退所履歴</div>
         <div class="history-filter">
           <input type="date" class="filter-input" id="filterDate">
           <input type="text" class="filter-input" id="filterName" placeholder="名前で絞り込み" style="width:150px">
@@ -343,6 +354,12 @@ function getWeekStart(date) {
   d.setHours(0,0,0,0); return d;
 }
 
+/* 来所／退所の区分。type を持たない記録は、区分を分ける前に作られた
+   お迎えの記録なので退所として扱う */
+const visitTypeOf = r => r.type === 'arrival' ? 'arrival' : 'departure';
+const VISIT_LABEL = { arrival: '来所', departure: '退所' };
+const VISIT_SHORT = { arrival: '来', departure: '退' };
+
 async function loadWeekSummary() {
   const container = document.getElementById('summaryContainer');
   container.innerHTML = '<div style="padding:32px;text-align:center;color:rgba(40,30,24,0.3)">読み込み中...</div>';
@@ -366,7 +383,7 @@ async function loadWeekSummary() {
     const hm = `${String(jst.getHours()).padStart(2,'0')}:${String(jst.getMinutes()).padStart(2,'0')}`;
     if (!data[r.parentId]) data[r.parentId] = {};
     if (!data[r.parentId][key]) data[r.parentId][key] = [];
-    data[r.parentId][key].push(hm);
+    data[r.parentId][key].push({ hm, type: visitTypeOf(r) });
   });
 
   const today = new Date(), todayKey = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
@@ -391,7 +408,9 @@ async function loadWeekSummary() {
         const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`, isToday = key===todayKey;
         const times = data[p.id]?.[key];
         html += `<td class="td-day ${isToday?'today':''}">`;
-        if (times?.length) times.forEach(t => { html += `<div class="pickup-badge">🏠 ${t}</div>`; });
+        if (times?.length) times.slice().sort((a,b) => a.hm.localeCompare(b.hm)).forEach(t => {
+          html += `<div class="pickup-badge${t.type === 'arrival' ? ' pickup-badge--in' : ''}">${VISIT_SHORT[t.type]} ${t.hm}</div>`;
+        });
         else html += `<span class="empty-cell">–</span>`;
         html += '</td>';
       });
@@ -406,7 +425,7 @@ function weekPrev() { weekStart=new Date(weekStart); weekStart.setDate(weekStart
 function weekNext() { weekStart=new Date(weekStart); weekStart.setDate(weekStart.getDate()+7); loadWeekSummary(); }
 function weekThis() { weekStart=getWeekStart(new Date()); loadWeekSummary(); }
 
-/* ===== お迎え履歴 ===== */
+/* ===== 入退所履歴 ===== */
 async function loadHistory() {
   try {
     const snap = await db.collection('pickupRecords').orderBy('timestamp','desc').limit(200).get();
@@ -429,10 +448,10 @@ function renderHistory() {
   if (fName) records = records.filter(r => (r.parentName||'').toLowerCase().includes(fName) || (r.childName||'').toLowerCase().includes(fName));
 
   const container = document.getElementById('historyContainer');
-  if (!records.length) { container.innerHTML = '<div class="history-empty">お迎え記録がありません</div>'; return; }
+  if (!records.length) { container.innerHTML = '<div class="history-empty">記録がありません</div>'; return; }
 
   let html = `<table class="history-table">
-    <thead><tr><th>写真</th><th>保護者 / お子様</th><th>時刻</th><th></th></tr></thead><tbody>`;
+    <thead><tr><th>写真</th><th>区分</th><th>保護者 / お子様</th><th>時刻</th><th></th></tr></thead><tbody>`;
   records.forEach(r => {
     let dateStr='–', timeStr='–';
     if (r.timestamp) {
@@ -444,8 +463,10 @@ function renderHistory() {
     const photoHtml = r.photoBase64
       ? `<img class="rec-photo" src="${r.photoBase64}" alt="" onclick="openPhotoFull('${r.photoBase64}')">`
       : `<div style="width:44px;height:44px;border-radius:10px;background:rgba(242,144,108,0.1);display:flex;align-items:center;justify-content:center;font-size:20px">👤</div>`;
+    const vt = visitTypeOf(r);
     html += `<tr>
       <td>${photoHtml}</td>
+      <td><span class="pickup-badge${vt === 'arrival' ? ' pickup-badge--in' : ''}">${VISIT_LABEL[vt]}</span></td>
       <td><div class="rec-parent">${r.parentName||'–'}</div><div class="rec-child">${r.childName?'お子様：'+r.childName:''}</div></td>
       <td><div class="rec-time">${timeStr}</div><div class="rec-date">${dateStr}</div></td>
       <td><button class="btn-rec-delete" onclick="deleteRecord('${r.id}',this)">🗑</button></td>
