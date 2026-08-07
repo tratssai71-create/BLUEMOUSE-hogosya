@@ -70,7 +70,8 @@
 
     .camera-wrapper { position: relative; width: min(460px, 88vw); border-radius: 20px; overflow: hidden; background: rgb(var(--bm-surface)); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
     #video { width: 100%; display: block; border-radius: 18px; }
-    .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.45); }
+    /* ヘッダーと同じ面の色に揃える（黒の被せ物だと帯だけ沈んで見えるため） */
+    .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: rgba(255,255,255,0.55); background: rgb(var(--bm-surface)); }
     .face-detecting { color: var(--bm-yellow); }
     .face-recognized { color: var(--bm-teal); }
 
