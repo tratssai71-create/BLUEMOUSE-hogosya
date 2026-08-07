@@ -65,6 +65,8 @@
     /* 数字はHPと同じく Inter。line-height はbodyの1.75だと行間が空きすぎるので詰める */
     .clock-time { font-family: "Inter", sans-serif; font-size: 56px; font-weight: 300; letter-spacing: 4px; line-height: 1.15; color: rgb(var(--bm-ink)); }
     .clock-date { font-size: 20px; line-height: 1.4; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
+    /* 「日」の前の数字だけロゴ色。周りが50%の薄い文字なので、埋もれないよう太さも上げる */
+    .clock-day-num { color: var(--bm-teal); font-weight: 700; }
     /* 児童発達支援の目印（HPの見出し装飾と同じ考え方の細いイエロー線） */
     .clock-time-section::after { content: ''; display: block; width: 36px; height: 2px; margin: 12px auto 0; background: var(--bm-yellow); border-radius: 2px; }
 
@@ -441,7 +443,8 @@ function startClock(tId, dId) {
     const pad = n => String(n).padStart(2,'0');
     const tEl = document.getElementById(tId), dEl = document.getElementById(dId);
     if (tEl) tEl.textContent = `${pad(jst.getHours())}:${pad(jst.getMinutes())}:${pad(jst.getSeconds())}`;
-    if (dEl) { const days=['日','月','火','水','木','金','土']; dEl.textContent = `${jst.getFullYear()}年${jst.getMonth()+1}月${jst.getDate()}日（${days[jst.getDay()]}）`; }
+    // 「日」の前の数字だけロゴ色にするため、そこだけspanで囲む
+    if (dEl) { const days=['日','月','火','水','木','金','土']; dEl.innerHTML = `${jst.getFullYear()}年${jst.getMonth()+1}月<span class="clock-day-num">${jst.getDate()}</span>日（${days[jst.getDay()]}）`; }
   };
   update(); setInterval(update, 1000);
 }
