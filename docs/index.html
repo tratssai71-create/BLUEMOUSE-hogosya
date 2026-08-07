@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>お迎え記録 | BLUE MOUSE</title>
+  <!-- 本番HPと同じフォント。和文=Zen Maru Gothic（丸ゴシック）／数字・英字=Inter。
+       Zen Maru Gothic は 400/500/700 のみで 800 は無いため、太字は 700 までにする -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.14/dist/face-api.js"></script>
@@ -20,7 +25,7 @@
       --bm-yellow-light: #fef9e7;
       --bm-yellow-ink: #6b4f08;   /* 黄色の上に乗せる文字色（白は使わない） */
       --bm-cream: #fffdf7;
-      --bm-ink: 40, 30, 24;        /* 本文の文字色（暖色） */
+      --bm-ink: 51, 37, 26;        /* 本文の文字色。HPの --ink #33251a と同値 */
       /* 暗色の面（ヘッダー・カメラ枠・サンクス画面）。HPのフッターと同じ #1e2a2c。
          文字色とは別に持つ。カメラ映像に色被りしないよう寒色ニュートラルにしている */
       --bm-surface: 30, 42, 44;
@@ -31,7 +36,13 @@
       --topbar-logo-h: 40px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
+    /* 本番HPのbodyと同じ設定 */
+    body {
+      font-family: "Zen Maru Gothic", "Zen Kaku Gothic New", sans-serif;
+      background: var(--bm-cream); color: rgb(var(--bm-ink));
+      line-height: 1.75; -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
 
     /* Topbar */
     .topbar {
@@ -51,8 +62,9 @@
     /* Clock Screen */
     #clockScreen { padding-top: var(--topbar-h); min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
     .clock-time-section { text-align: center; padding: 18px 20px 14px; }
-    .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: rgb(var(--bm-ink)); }
-    .clock-date { font-size: 20px; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
+    /* 数字はHPと同じく Inter。line-height はbodyの1.75だと行間が空きすぎるので詰める */
+    .clock-time { font-family: "Inter", sans-serif; font-size: 56px; font-weight: 300; letter-spacing: 4px; line-height: 1.15; color: rgb(var(--bm-ink)); }
+    .clock-date { font-size: 20px; line-height: 1.4; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
     /* 児童発達支援の目印（HPの見出し装飾と同じ考え方の細いイエロー線） */
     .clock-time-section::after { content: ''; display: block; width: 36px; height: 2px; margin: 12px auto 0; background: var(--bm-yellow); border-radius: 2px; }
 
@@ -117,7 +129,7 @@
     .thanks-photo { width: 136px; height: 136px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.15); position: absolute; top: 6px; left: 6px; }
     .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(95,193,199,0.65); animation: ring-expand 2s ease-out infinite; }
     @keyframes ring-expand { 0%{transform:scale(.88);opacity:0} 30%{opacity:1} 100%{transform:scale(1.12);opacity:0} }
-    .thanks-name { font-size: 32px; font-weight: 800; color: var(--bm-cream); margin-bottom: 6px; }
+    .thanks-name { font-size: 32px; font-weight: 700; color: var(--bm-cream); margin-bottom: 6px; }
     .thanks-child { font-size: 15px; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
     .thanks-message { font-size: 17px; color: rgba(255,255,255,0.55); margin-bottom: 28px; font-weight: 500; }
     .thanks-time { font-size: 13px; color: rgba(255,255,255,0.28); letter-spacing: 0.5px; }
@@ -149,7 +161,7 @@
     }
     .checklist-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
     .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(107,79,8,0.25); flex-shrink: 0; }
-    .checklist-name { font-size: 17px; font-weight: 800; }
+    .checklist-name { font-size: 17px; font-weight: 700; }
     .checklist-child { font-size: 13px; opacity: 0.75; margin-top: 2px; }
     .checklist-subtitle { font-size: 13px; opacity: 0.8; margin-top: 10px; }
     .checklist-body { padding: 20px 24px; }
@@ -197,6 +209,30 @@
     }
     .btn-checklist-confirm:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
     .btn-checklist-confirm:not(:disabled):hover { transform: translateY(-1px); }
+
+    /* ── 横長画面（MacBook Air M1＝1440×810想定）のレイアウト ──
+       縦積みのままだと左右が大きく余り、カメラも小さいままになる。
+       左にカメラを大きく、右に時計・保護者情報・ボタンを縦に並べる2カラムにする。
+       DOMの順序は変えずCSS Gridの配置だけで組んでいる（JS側に影響を出さないため） */
+    @media (min-width: 1000px) {
+      #clockScreen {
+        display: grid;
+        grid-template-columns: auto minmax(360px, 420px);
+        /* 上下の 1fr が余白を吸収する。これが無いと、保護者カードが非表示のときに
+           時計とボタンがカメラの高さいっぱいに引き離されて間延びする */
+        grid-template-rows: 1fr auto auto auto 1fr;
+        align-content: center; justify-content: center;
+        column-gap: 44px;
+        padding: calc(var(--topbar-h) + 20px) 40px 20px;
+      }
+      /* カメラは左カラムで全行にまたがり、上下中央 */
+      .camera-wrapper { grid-column: 1; grid-row: 1 / -1; width: min(620px, 46vw); align-self: center; }
+      /* 右カラムは情報の列として左揃えにし、3つでひとかたまりに見せる */
+      .clock-time-section { grid-column: 2; grid-row: 2; text-align: left; padding: 0 0 18px; }
+      .clock-time-section::after { margin-left: 0; margin-right: auto; }
+      #profileCard { grid-column: 2; grid-row: 3; width: 100%; margin-top: 0; }
+      .action-buttons { grid-column: 2; grid-row: 4; width: 100%; margin-top: 18px; }
+    }
   </style>
 </head>
 <body>
