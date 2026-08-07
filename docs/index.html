@@ -8,11 +8,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.14/dist/face-api.js"></script>
   <style>
+    /* 本番HP（child.html＝児童発達支援ページ）と同じ値を使う。
+       この画面は児童発達支援の入退室で使うため、目印はイエロー系。
+       放課後等デイのテーマカラーは使わず、ティールはロゴ色としての差し色のみ。 */
     :root {
-      --bm-coral: #f2906c;
+      --bm-coral: #f2906c;        /* 行動色（CTA）。サービス固有の色ではない */
       --bm-coral-dark: #e87e59;
-      --bm-teal: #5ec1c6;
-      --bm-yellow: #f5d24a;
+      --bm-teal: #5fc1c7;         /* ロゴ色 */
+      --bm-yellow: #f5d24a;       /* 児童発達支援の目印 */
+      --bm-yellow-dark: #d9a520;
+      --bm-yellow-light: #fef9e7;
+      --bm-yellow-ink: #6b4f08;   /* 黄色の上に乗せる文字色（白は使わない） */
       --bm-cream: #fffdf7;
       --bm-ink: 40, 30, 24;
     }
@@ -33,6 +39,8 @@
     .clock-time-section { text-align: center; padding: 18px 20px 14px; }
     .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: rgb(var(--bm-ink)); }
     .clock-date { font-size: 20px; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
+    /* 児童発達支援の目印（HPの見出し装飾と同じ考え方の細いイエロー線） */
+    .clock-time-section::after { content: ''; display: block; width: 36px; height: 2px; margin: 12px auto 0; background: var(--bm-yellow); border-radius: 2px; }
 
     .camera-wrapper { position: relative; width: min(460px, 88vw); border-radius: 20px; overflow: hidden; background: rgba(var(--bm-ink),1); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
     #video { width: 100%; display: block; border-radius: 18px; }
@@ -52,18 +60,19 @@
     .profile-info { flex: 1; }
     .profile-name { font-size: 18px; font-weight: 700; color: rgb(var(--bm-ink)); }
     .profile-child-name { font-size: 13px; color: rgba(var(--bm-ink),0.5); margin-top: 2px; }
-    .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.35); color: #3aa8ae; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
+    .auth-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(95,193,199,0.12); border: 1px solid rgba(95,193,199,0.35); color: #3aa8ae; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-top: 6px; }
 
     /* 子供写真エリア */
     #childPhotoArea {
       display: none;
       align-items: center; gap: 12px;
-      background: rgba(var(--bm-ink),0.03); border-radius: 12px;
+      background: var(--bm-yellow-light); border-radius: 12px;
       padding: 10px 14px;
-      border: 1px solid rgba(var(--bm-ink),0.06);
+      border: 1px solid rgba(217,165,32,0.22);
     }
-    #childPhotoEl { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(94,193,198,0.4); flex-shrink: 0; }
-    .child-label { font-size: 11px; font-weight: 700; color: rgba(var(--bm-ink),0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    #childPhotoEl { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(217,165,32,0.42); flex-shrink: 0; }
+    /* HPの児発ページのラベル帯と同じ（イエロー地＋濃茶文字） */
+    .child-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--bm-yellow-ink); background: var(--bm-yellow); padding: 2px 9px; border-radius: 100px; letter-spacing: 0.06em; margin-bottom: 4px; }
     .child-name-text { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); }
 
     .action-buttons { display: flex; width: min(460px, 88vw); margin-top: 12px; }
@@ -86,13 +95,13 @@
     }
     #thanksScreen::before {
       content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 38%, rgba(94,193,198,0.22) 0%, transparent 62%);
+      background: radial-gradient(ellipse at 50% 38%, rgba(95,193,199,0.22) 0%, transparent 62%);
       pointer-events: none;
     }
-    .thanks-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 18px; border-radius: 999px; margin-bottom: 32px; background: rgba(94,193,198,0.15); border: 1px solid rgba(94,193,198,0.4); color: var(--bm-teal); text-transform: uppercase; }
+    .thanks-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 18px; border-radius: 999px; margin-bottom: 32px; background: rgba(95,193,199,0.15); border: 1px solid rgba(95,193,199,0.4); color: var(--bm-teal); text-transform: uppercase; }
     .thanks-photo-wrap { position: relative; width: 148px; height: 148px; margin: 0 auto 28px; }
     .thanks-photo { width: 136px; height: 136px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.15); position: absolute; top: 6px; left: 6px; }
-    .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(94,193,198,0.65); animation: ring-expand 2s ease-out infinite; }
+    .thanks-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(95,193,199,0.65); animation: ring-expand 2s ease-out infinite; }
     @keyframes ring-expand { 0%{transform:scale(.88);opacity:0} 30%{opacity:1} 100%{transform:scale(1.12);opacity:0} }
     .thanks-name { font-size: 32px; font-weight: 800; color: var(--bm-cream); margin-bottom: 6px; }
     .thanks-child { font-size: 15px; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
@@ -121,11 +130,11 @@
     }
     @keyframes modalIn { from { opacity:0; transform:scale(0.88) translateY(20px); } to { opacity:1; transform:none; } }
     .checklist-header {
-      background: linear-gradient(135deg, var(--bm-coral), var(--bm-coral-dark));
-      padding: 20px 24px; color: white;
+      background: linear-gradient(135deg, #f8db63 0%, var(--bm-yellow) 100%);
+      padding: 20px 24px; color: var(--bm-yellow-ink);
     }
     .checklist-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-    .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.4); flex-shrink: 0; }
+    .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(107,79,8,0.25); flex-shrink: 0; }
     .checklist-name { font-size: 17px; font-weight: 800; }
     .checklist-child { font-size: 13px; opacity: 0.75; margin-top: 2px; }
     .checklist-subtitle { font-size: 13px; opacity: 0.8; margin-top: 10px; }
@@ -145,7 +154,7 @@
       user-select: none;
     }
     .checklist-item.checked {
-      border-color: var(--bm-teal); background: rgba(94,193,198,0.07);
+      border-color: var(--bm-teal); background: rgba(95,193,199,0.07);
     }
     .checklist-check {
       width: 26px; height: 26px; border-radius: 8px; border: 2.5px solid rgba(var(--bm-ink),0.2);
