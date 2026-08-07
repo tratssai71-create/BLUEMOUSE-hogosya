@@ -20,7 +20,10 @@
       --bm-yellow-light: #fef9e7;
       --bm-yellow-ink: #6b4f08;   /* 黄色の上に乗せる文字色（白は使わない） */
       --bm-cream: #fffdf7;
-      --bm-ink: 40, 30, 24;
+      --bm-ink: 40, 30, 24;        /* 本文の文字色（暖色） */
+      /* 暗色の面（ヘッダー・カメラ枠・サンクス画面）。HPのフッターと同じ #1e2a2c。
+         文字色とは別に持つ。カメラ映像に色被りしないよう寒色ニュートラルにしている */
+      --bm-surface: 30, 42, 44;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
@@ -28,7 +31,7 @@
     /* Topbar */
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; height: 52px;
-      background: rgba(var(--bm-ink), 0.97);
+      background: rgba(var(--bm-surface), 0.97);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       display: flex; align-items: center; justify-content: center; padding: 0 16px; z-index: 50;
     }
@@ -42,7 +45,7 @@
     /* 児童発達支援の目印（HPの見出し装飾と同じ考え方の細いイエロー線） */
     .clock-time-section::after { content: ''; display: block; width: 36px; height: 2px; margin: 12px auto 0; background: var(--bm-yellow); border-radius: 2px; }
 
-    .camera-wrapper { position: relative; width: min(460px, 88vw); border-radius: 20px; overflow: hidden; background: rgba(var(--bm-ink),1); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
+    .camera-wrapper { position: relative; width: min(460px, 88vw); border-radius: 20px; overflow: hidden; background: rgb(var(--bm-surface)); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
     #video { width: 100%; display: block; border-radius: 18px; }
     .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.45); }
     .face-detecting { color: var(--bm-yellow); }
@@ -91,7 +94,7 @@
     #thanksScreen {
       display: none; min-height: 100vh; align-items: center; justify-content: center;
       flex-direction: column; text-align: center; padding: 40px 20px;
-      background: rgb(var(--bm-ink)); position: relative; overflow: hidden;
+      background: rgb(var(--bm-surface)); position: relative; overflow: hidden;
     }
     #thanksScreen::before {
       content: ''; position: absolute; inset: 0;
@@ -111,7 +114,7 @@
     .thanks-bar-fill { height: 100%; width: 0%; background: var(--bm-teal); border-radius: 2px; transition: width 5s linear; }
 
     /* Loading */
-    #loadingOverlay { position: fixed; inset: 0; background: rgb(var(--bm-ink)); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 999; }
+    #loadingOverlay { position: fixed; inset: 0; background: rgb(var(--bm-surface)); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 999; }
     .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--bm-coral); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 14px; color: rgba(255,255,255,0.4); }
