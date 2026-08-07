@@ -24,21 +24,32 @@
       /* 暗色の面（ヘッダー・カメラ枠・サンクス画面）。HPのフッターと同じ #1e2a2c。
          文字色とは別に持つ。カメラ映像に色被りしないよう寒色ニュートラルにしている */
       --bm-surface: 30, 42, 44;
+      /* ヘッダーの高さとロゴの比率はHPのヘッダー（60px帯／32pxロゴ＝約53%）に合わせる。
+         据え置きタブレットを離れて見るため、比率は保ったままひと回り大きくしている。
+         帯の高さは #clockScreen の padding-top と必ず一致させる必要があるので変数で1本化 */
+      --topbar-h: 76px;
+      --topbar-logo-h: 40px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: var(--bm-cream); color: rgb(var(--bm-ink)); min-height: 100vh; }
 
     /* Topbar */
     .topbar {
-      position: fixed; top: 0; left: 0; right: 0; height: 52px;
+      position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
       background: rgba(var(--bm-surface), 0.97);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       display: flex; align-items: center; justify-content: center; padding: 0 16px; z-index: 50;
     }
-    .topbar-logo { height: 30px; width: auto; display: block; }
+    .topbar-logo { height: var(--topbar-logo-h); width: auto; display: block; }
+
+    /* 画面が低い端末（スマホ・横向き）では帯を元の高さに戻し、
+       時計からお迎え完了ボタンまでが1画面に収まることを優先する */
+    @media (max-height: 720px) {
+      :root { --topbar-h: 52px; --topbar-logo-h: 30px; }
+    }
 
     /* Clock Screen */
-    #clockScreen { padding-top: 52px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
+    #clockScreen { padding-top: var(--topbar-h); min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
     .clock-time-section { text-align: center; padding: 18px 20px 14px; }
     .clock-time { font-size: 56px; font-weight: 300; letter-spacing: 4px; color: rgb(var(--bm-ink)); }
     .clock-date { font-size: 20px; color: rgba(var(--bm-ink), 0.5); margin-top: 6px; }
