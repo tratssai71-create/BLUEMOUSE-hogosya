@@ -200,8 +200,12 @@
     .checklist-item.checked .checklist-check {
       background: var(--bm-teal); border-color: var(--bm-teal); color: white;
     }
+    /* チェック印はCSSで出す（HTML側の要素は空のため、これが無いと塗られた四角のままになる） */
+    .checklist-item.checked .checklist-check::after { content: '✓'; font-size: 16px; font-weight: 700; line-height: 1; }
     .checklist-item-text { font-size: 16px; font-weight: 600; color: rgb(var(--bm-ink)); }
-    .checklist-item.checked .checklist-item-text { color: rgba(var(--bm-ink),0.5); text-decoration: line-through; }
+    /* これは「済んだ作業」ではなく保護者の申告なので、取り消し線や文字を薄くする表現は使わない。
+       チェック済みは枠・背景・チェック印だけで示す */
+    .checklist-item.checked .checklist-item-text { color: rgb(var(--bm-ink)); font-weight: 700; }
     .checklist-progress { font-size: 12px; color: rgba(var(--bm-ink),0.4); text-align: right; margin-bottom: 14px; }
     .checklist-actions { display: flex; gap: 10px; }
     .btn-checklist-cancel {
