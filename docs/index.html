@@ -109,6 +109,8 @@
       font-size: 15px; font-weight: 500; line-height: 1.6;
       color: rgba(var(--bm-ink), 0.62); min-height: 1.6em;
     }
+    /* 退所はモーダルが無いので、失敗時はここをエラー表示に使う */
+    .action-lead.is-error { color: #c0453f; font-weight: 700; }
     .action-buttons { display: flex; width: min(460px, 88vw); margin-top: 10px; }
     .btn-pickup {
       flex: 1; padding: 22px; border-radius: 16px; border: none;
@@ -367,8 +369,8 @@ const VISIT_COPY = {
   departure: {
     lead: 'お迎えありがとうございます',
     button: '退所を記録する',
-    checklistSubtitle: 'お帰りの前に以下の項目をご確認ください',
-    checklistConfirm: '✓ 退所を記録する',
+    // 退所は検温などの確認事項が無いためチェックリストを出さず、
+    // ボタンを押した時点でそのまま記録する（checklist系の文言は持たない）
     thanksBadge: '✓  退所を記録しました',
     thanksMessage: 'お気をつけてお帰りください'
   }
@@ -513,7 +515,9 @@ function showProfile(parent) {
 
   // 当日1回目なら来所、2回目以降なら退所として文言を切り替える
   const copy = VISIT_COPY[visitTypeFor(parent.id)];
-  document.getElementById('actionLead').textContent = copy.lead;
+  const lead = document.getElementById('actionLead');
+  lead.textContent = copy.lead;
+  lead.classList.remove('is-error');
   document.getElementById('btnPickup').textContent = copy.button;
 
   document.getElementById('profileCard').style.display = 'flex';
@@ -522,10 +526,13 @@ function showProfile(parent) {
 }
 
 function hideProfile() {
+  // 記録の書き込み中は画面をそのままにする（顔が外れても処理は続いている）
+  if (isSubmitting) return;
   currentParent = null;
   document.getElementById('profileCard').style.display = 'none';
   document.getElementById('childPhotoArea').style.display = 'none';
-  document.getElementById('actionLead').textContent = '';
+  const lead = document.getElementById('actionLead');
+  lead.textContent = ''; lead.classList.remove('is-error');
   document.getElementById('btnPickup').disabled = true;
 }
 
@@ -534,13 +541,34 @@ function generateAvatar(name) {
   return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f2906c"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="%23fffdf7">${encodeURIComponent(c)}</text></svg>`;
 }
 
+const ERROR_MESSAGE = '記録できませんでした。通信状況をご確認のうえ、もう一度お試しください。';
+
+// 記録の書き込み本体。失敗時は例外をそのまま投げ、呼び出し側で画面に出す
+async function submitVisit(parent) {
+  const photo = capturePhoto();
+  const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  // type は今回から追加した項目。これが無い過去の記録は「退所（お迎え）」として扱う
+  await db.collection('pickupRecords').add({
+    parentId: parent.id, parentName: parent.name, childName: parent.childName || '',
+    type: parent.visitType, timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo
+  });
+  // 次に同じ人が来たら退所と判定されるよう、端末内の当日件数を進める
+  todayVisitCounts[parent.id] = (todayVisitCounts[parent.id] || 0) + 1;
+  return jst;
+}
+
 function recordPickup() {
-  if (!currentParent) return;
+  if (!currentParent || isSubmitting) return;
   // 認証済みの保護者を確定させる（この後カメラから顔が外れても記録できる）
-  checklistParent = { ...currentParent };
+  const parent = { ...currentParent };
   // 来所か退所かもこの時点で確定させる（記録するまでの間に他の人が記録しても揺れないように）
-  checklistParent.visitType = visitTypeFor(currentParent.id);
-  const copy = VISIT_COPY[checklistParent.visitType];
+  parent.visitType = visitTypeFor(currentParent.id);
+
+  // 退所は確認事項が無いので、チェックリストを挟まずそのまま記録する
+  if (parent.visitType === 'departure') { recordDirect(parent); return; }
+
+  checklistParent = parent;
+  const copy = VISIT_COPY[parent.visitType];
   document.querySelector('.checklist-subtitle').textContent = copy.checklistSubtitle;
   document.getElementById('btnConfirmPickup').textContent = copy.checklistConfirm;
   document.getElementById('checklistPhoto').src = checklistParent.photo || generateAvatar(checklistParent.name);
@@ -570,30 +598,49 @@ function closeChecklist() {
   checklistParent = null;
 }
 
+// 来所：チェックリストの確定ボタンから
 async function confirmPickup() {
   if (!checklistParent || isSubmitting) return;
   const parent = checklistParent;
   const btn = document.getElementById('btnConfirmPickup');
-  isSubmitting = true; btn.disabled = true; btn.textContent = '記録中...';
-  const photo = capturePhoto();
-  const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
   const copy = VISIT_COPY[parent.visitType];
+  isSubmitting = true; btn.disabled = true; btn.textContent = '記録中...';
+  let jst;
   try {
-    // type は今回から追加した項目。これが無い過去の記録は「退所（お迎え）」として扱う
-    await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', type: parent.visitType, timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
+    jst = await submitVisit(parent);
   } catch(e) {
     // 記録に失敗してもモーダルに留まり、その場でやり直せるようにする
     console.error(e);
     const err = document.getElementById('checklistError');
-    err.textContent = '記録できませんでした。通信状況をご確認のうえ、もう一度お試しください。';
+    err.textContent = ERROR_MESSAGE;
     err.classList.add('show');
     isSubmitting = false; btn.textContent = copy.checklistConfirm; btn.disabled = false;
     return;
   }
-  // 次に同じ人が来たら退所と判定されるよう、端末内の当日件数を進める
-  todayVisitCounts[parent.id] = (todayVisitCounts[parent.id] || 0) + 1;
   isSubmitting = false; btn.textContent = copy.checklistConfirm;
   closeChecklist();
+  showThanks(parent, jst);
+}
+
+// 退所：チェックリストを通さず、お迎え画面のボタンから直接記録する
+async function recordDirect(parent) {
+  const btn = document.getElementById('btnPickup');
+  const lead = document.getElementById('actionLead');
+  const label = VISIT_COPY[parent.visitType].button;
+  isSubmitting = true; btn.disabled = true; btn.textContent = '記録中...';
+  let jst;
+  try {
+    jst = await submitVisit(parent);
+  } catch(e) {
+    // モーダルが無いので、ボタンの上の一言をエラー表示に使う
+    console.error(e);
+    lead.textContent = ERROR_MESSAGE;
+    lead.classList.add('is-error');
+    isSubmitting = false; btn.textContent = label; btn.disabled = false;
+    return;
+  }
+  isSubmitting = false; btn.textContent = label;
+  lead.classList.remove('is-error');
   showThanks(parent, jst);
 }
 
