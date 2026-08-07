@@ -102,7 +102,14 @@
     .child-label { display: inline-block; font-size: 11px; font-weight: 700; color: var(--bm-yellow-ink); background: var(--bm-yellow); padding: 2px 9px; border-radius: 100px; letter-spacing: 0.06em; margin-bottom: 4px; }
     .child-name-text { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); }
 
-    .action-buttons { display: flex; width: min(460px, 88vw); margin-top: 12px; }
+    /* ボタンの上の一言。来所／退所で文言が変わる。
+       未認証のときは空になるが、高さを確保して画面が跳ねないようにする */
+    .action-lead {
+      width: min(460px, 88vw); margin-top: 14px; text-align: center;
+      font-size: 15px; font-weight: 500; line-height: 1.6;
+      color: rgba(var(--bm-ink), 0.62); min-height: 1.6em;
+    }
+    .action-buttons { display: flex; width: min(460px, 88vw); margin-top: 10px; }
     .btn-pickup {
       flex: 1; padding: 22px; border-radius: 16px; border: none;
       font-size: 20px; font-weight: 700; cursor: pointer; letter-spacing: 0.03em;
@@ -221,7 +228,7 @@
         grid-template-columns: auto minmax(360px, 420px);
         /* 上下の 1fr が余白を吸収する。これが無いと、保護者カードが非表示のときに
            時計とボタンがカメラの高さいっぱいに引き離されて間延びする */
-        grid-template-rows: 1fr auto auto auto 1fr;
+        grid-template-rows: 1fr auto auto auto auto 1fr;
         align-content: center; justify-content: center;
         column-gap: 44px;
         padding: calc(var(--topbar-h) + 20px) 40px 20px;
@@ -232,7 +239,8 @@
       .clock-time-section { grid-column: 2; grid-row: 2; text-align: left; padding: 0 0 18px; }
       .clock-time-section::after { margin-left: 0; margin-right: auto; }
       #profileCard { grid-column: 2; grid-row: 3; width: 100%; margin-top: 0; }
-      .action-buttons { grid-column: 2; grid-row: 4; width: 100%; margin-top: 18px; }
+      .action-lead { grid-column: 2; grid-row: 4; width: 100%; margin-top: 16px; }
+      .action-buttons { grid-column: 2; grid-row: 5; width: 100%; margin-top: 10px; }
     }
   </style>
 </head>
@@ -276,8 +284,9 @@
       </div>
     </div>
   </div>
+  <p class="action-lead" id="actionLead"></p>
   <div class="action-buttons">
-    <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">お迎え完了</button>
+    <button class="btn-pickup" id="btnPickup" disabled onclick="recordPickup()">記録する</button>
   </div>
 </div>
 
@@ -340,6 +349,65 @@ let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, la
 // チェックリストを開いた時点の保護者を保持（表示中に顔がカメラから外れても記録できるように）
 let checklistParent = null, isSubmitting = false;
 
+// 同じ保護者の当日1回目を来所、2回目以降を退所として自動判定する。
+// 判定に使う当日の件数は端末内に持つ（この端末1台での運用が前提）。
+// 起動時に1度読み込み、記録するたびに加算、日付が変わったら読み直す。
+let todayKey = '', todayVisitCounts = {}, isLoadingVisits = false;
+
+// 来所／退所それぞれの文言。ここを直せば画面の言い回しが全て変わる
+const VISIT_COPY = {
+  arrival: {
+    lead: 'お子様をお預かりします',
+    button: '来所を記録する',
+    checklistSubtitle: 'お預かりの前に以下の項目をご確認ください',
+    checklistConfirm: '✓ 来所を記録する',
+    thanksBadge: '✓  来所を記録しました',
+    thanksMessage: 'いってらっしゃい！'
+  },
+  departure: {
+    lead: 'お迎えありがとうございます',
+    button: '退所を記録する',
+    checklistSubtitle: 'お帰りの前に以下の項目をご確認ください',
+    checklistConfirm: '✓ 退所を記録する',
+    thanksBadge: '✓  退所を記録しました',
+    thanksMessage: 'お気をつけてお帰りください'
+  }
+};
+
+function localDateKey(d = new Date()) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+async function loadTodayVisits() {
+  if (isLoadingVisits) return;
+  isLoadingVisits = true;
+  try {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const snap = await db.collection('pickupRecords').where('timestamp', '>=', start).get();
+    const counts = {};
+    snap.forEach(doc => {
+      const id = doc.data().parentId;
+      if (id) counts[id] = (counts[id] || 0) + 1;
+    });
+    todayVisitCounts = counts;
+    todayKey = localDateKey();
+  } finally {
+    isLoadingVisits = false;
+  }
+}
+
+// 日付をまたいだら当日分を読み直す（端末は起動しっぱなしのため）
+async function ensureTodayVisits() {
+  if (todayKey !== localDateKey()) {
+    try { await loadTodayVisits(); } catch (e) { console.error(e); }
+  }
+}
+
+function visitTypeFor(parentId) {
+  return (todayVisitCounts[parentId] || 0) === 0 ? 'arrival' : 'departure';
+}
+
 window.addEventListener('load', async () => {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
@@ -385,6 +453,9 @@ async function startCamera() {
   } catch(e) {
     console.error(e); setStatus('保護者データを読み込めませんでした', ''); return;
   }
+  // 来所／退所の判定に使う当日分。失敗しても認証自体は続行させる
+  try { await loadTodayVisits(); } catch(e) { console.error(e); }
+  setInterval(ensureTodayVisits, 60000);
   startDetection();
 }
 
@@ -440,6 +511,11 @@ function showProfile(parent) {
     childArea.style.display = 'none';
   }
 
+  // 当日1回目なら来所、2回目以降なら退所として文言を切り替える
+  const copy = VISIT_COPY[visitTypeFor(parent.id)];
+  document.getElementById('actionLead').textContent = copy.lead;
+  document.getElementById('btnPickup').textContent = copy.button;
+
   document.getElementById('profileCard').style.display = 'flex';
   document.getElementById('btnPickup').disabled = false;
   setStatus(`✓ ${parent.name}さんを認証しました`, 'recognized');
@@ -449,6 +525,7 @@ function hideProfile() {
   currentParent = null;
   document.getElementById('profileCard').style.display = 'none';
   document.getElementById('childPhotoArea').style.display = 'none';
+  document.getElementById('actionLead').textContent = '';
   document.getElementById('btnPickup').disabled = true;
 }
 
@@ -461,6 +538,11 @@ function recordPickup() {
   if (!currentParent) return;
   // 認証済みの保護者を確定させる（この後カメラから顔が外れても記録できる）
   checklistParent = { ...currentParent };
+  // 来所か退所かもこの時点で確定させる（記録するまでの間に他の人が記録しても揺れないように）
+  checklistParent.visitType = visitTypeFor(currentParent.id);
+  const copy = VISIT_COPY[checklistParent.visitType];
+  document.querySelector('.checklist-subtitle').textContent = copy.checklistSubtitle;
+  document.getElementById('btnConfirmPickup').textContent = copy.checklistConfirm;
   document.getElementById('checklistPhoto').src = checklistParent.photo || generateAvatar(checklistParent.name);
   document.getElementById('checklistName').textContent = checklistParent.name + ' さん';
   document.getElementById('checklistChild').textContent = checklistParent.childName ? `お子様：${checklistParent.childName}` : '';
@@ -495,18 +577,22 @@ async function confirmPickup() {
   isSubmitting = true; btn.disabled = true; btn.textContent = '記録中...';
   const photo = capturePhoto();
   const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+  const copy = VISIT_COPY[parent.visitType];
   try {
-    await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
+    // type は今回から追加した項目。これが無い過去の記録は「退所（お迎え）」として扱う
+    await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', type: parent.visitType, timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
   } catch(e) {
     // 記録に失敗してもモーダルに留まり、その場でやり直せるようにする
     console.error(e);
     const err = document.getElementById('checklistError');
     err.textContent = '記録できませんでした。通信状況をご確認のうえ、もう一度お試しください。';
     err.classList.add('show');
-    isSubmitting = false; btn.textContent = '✓ お迎え完了'; btn.disabled = false;
+    isSubmitting = false; btn.textContent = copy.checklistConfirm; btn.disabled = false;
     return;
   }
-  isSubmitting = false; btn.textContent = '✓ お迎え完了';
+  // 次に同じ人が来たら退所と判定されるよう、端末内の当日件数を進める
+  todayVisitCounts[parent.id] = (todayVisitCounts[parent.id] || 0) + 1;
+  isSubmitting = false; btn.textContent = copy.checklistConfirm;
   closeChecklist();
   showThanks(parent, jst);
 }
@@ -526,7 +612,11 @@ function showThanks(parent, time) {
   document.getElementById('thanksName').textContent = parent.name + ' さん';
   document.getElementById('thanksChild').textContent = parent.childName ? `お子様：${parent.childName}` : '';
   document.getElementById('thanksPhoto').src = parent.photo || generateAvatar(parent.name);
-  document.getElementById('thanksTime').textContent = `お迎え時刻：${pad(time.getHours())}:${pad(time.getMinutes())}`;
+  const copy = VISIT_COPY[parent.visitType] || VISIT_COPY.departure;
+  document.querySelector('.thanks-badge').textContent = copy.thanksBadge;
+  document.querySelector('.thanks-message').textContent = copy.thanksMessage;
+  document.getElementById('thanksTime').textContent =
+    `${parent.visitType === 'arrival' ? '来所' : '退所'}時刻：${pad(time.getHours())}:${pad(time.getMinutes())}`;
   document.getElementById('thanksScreen').style.display = 'flex';
   setTimeout(() => document.getElementById('thanksBar').style.width = '100%', 100);
   setTimeout(returnToClock, 5000);
