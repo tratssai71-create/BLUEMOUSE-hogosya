@@ -36,7 +36,6 @@
 
     .camera-wrapper { position: relative; width: min(460px, 88vw); border-radius: 20px; overflow: hidden; background: rgba(var(--bm-ink),1); box-shadow: 0 4px 32px rgba(var(--bm-ink),0.18); }
     #video { width: 100%; display: block; border-radius: 18px; }
-    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     .camera-status { text-align: center; padding: 10px 16px; font-size: 13px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.45); }
     .face-detecting { color: var(--bm-yellow); }
     .face-recognized { color: var(--bm-teal); }
@@ -78,16 +77,6 @@
     .btn-pickup:disabled { opacity: 0.22; cursor: not-allowed; transform: none !important; }
     .btn-pickup:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(242,144,108,0.48); }
     .btn-pickup:not(:disabled):active { transform: translateY(0); }
-
-    .add-parent-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 16px; margin-bottom: 40px;
-      padding: 10px 20px; border-radius: 10px;
-      background: rgba(94,193,198,0.12); border: 1px solid rgba(94,193,198,0.28);
-      color: #3aa8ae; font-size: 14px; font-weight: 600; text-decoration: none;
-      transition: background 0.2s;
-    }
-    .add-parent-link:hover { background: rgba(94,193,198,0.22); }
 
     /* Thanks Screen */
     #thanksScreen {
@@ -137,10 +126,16 @@
     }
     .checklist-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
     .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.4); flex-shrink: 0; }
-    .checklist-header h2 { font-size: 17px; font-weight: 800; }
-    .checklist-header p { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+    .checklist-name { font-size: 17px; font-weight: 800; }
+    .checklist-child { font-size: 13px; opacity: 0.75; margin-top: 2px; }
     .checklist-subtitle { font-size: 13px; opacity: 0.8; margin-top: 10px; }
     .checklist-body { padding: 20px 24px; }
+    .checklist-error {
+      display: none; font-size: 14px; line-height: 1.6; color: #c0453f;
+      background: rgba(192,69,63,0.07); border: 1px solid rgba(192,69,63,0.22);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;
+    }
+    .checklist-error.show { display: block; }
     .checklist-items { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
     .checklist-item {
       display: flex; align-items: center; gap: 14px;
@@ -200,7 +195,6 @@
   </div>
   <div class="camera-wrapper">
     <video id="video" autoplay muted playsinline></video>
-    <canvas id="overlay"></canvas>
     <div class="camera-status" id="cameraStatus">カメラを起動中...</div>
   </div>
   <div id="profileCard">
@@ -234,13 +228,14 @@
       <div class="checklist-header-top">
         <img class="checklist-parent-photo" id="checklistPhoto" src="" alt="">
         <div>
-          <div class="checklist-header h2" id="checklistName" style="font-size:17px;font-weight:800;"></div>
-          <div style="font-size:13px;opacity:0.75;" id="checklistChild"></div>
+          <div class="checklist-name" id="checklistName"></div>
+          <div class="checklist-child" id="checklistChild"></div>
         </div>
       </div>
       <div class="checklist-subtitle">お迎え前に以下の項目をご確認ください</div>
     </div>
     <div class="checklist-body">
+      <div class="checklist-error" id="checklistError"></div>
       <div class="checklist-progress" id="checklistProgress">0 / 1 完了</div>
       <ul class="checklist-items" id="checklistItems">
         <li class="checklist-item" onclick="toggleCheck(this)">
@@ -281,7 +276,9 @@ const firebaseConfig = {
   appId: "1:244172125496:web:117e6c1aeeaa056ba2bdcd"
 };
 
-let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, videoStream = null, lastFaceTime = 0;
+let db, currentParent = null, labeledDescriptors = [], detectionTimer = null, lastFaceTime = 0;
+// チェックリストを開いた時点の保護者を保持（表示中に顔がカメラから外れても記録できるように）
+let checklistParent = null, isSubmitting = false;
 
 window.addEventListener('load', async () => {
   firebase.initializeApp(firebaseConfig);
@@ -318,11 +315,17 @@ function startClock(tId, dId) {
 async function startCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
-    videoStream = stream;
     const v = document.getElementById('video'); v.srcObject = stream; await v.play();
-    setStatus('保護者の顔をカメラに向けてください', 'detecting');
-    await loadParentDescriptors(); startDetection();
-  } catch(e) { setStatus('カメラにアクセスできません', ''); }
+  } catch(e) {
+    console.error(e); setStatus('カメラにアクセスできません', ''); return;
+  }
+  setStatus('保護者の顔をカメラに向けてください', 'detecting');
+  try {
+    await loadParentDescriptors();
+  } catch(e) {
+    console.error(e); setStatus('保護者データを読み込めませんでした', ''); return;
+  }
+  startDetection();
 }
 
 async function loadParentDescriptors() {
@@ -332,17 +335,20 @@ async function loadParentDescriptors() {
 }
 
 function startDetection() {
+  if (detectionTimer) clearInterval(detectionTimer);
   const v = document.getElementById('video');
   detectionTimer = setInterval(async () => {
     if (!v.videoWidth) return;
-    const det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor();
-    if (!det) { if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile(); if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting'); return; }
-    lastFaceTime = Date.now();
-    if (!labeledDescriptors.length) { setStatus('保護者が未登録です', ''); return; }
-    let best = null, bd = Infinity;
-    for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
-    if (bd < 0.5) { if (!currentParent || currentParent.id !== best.id) showProfile(best); }
-    else { if (currentParent) hideProfile(); setStatus('登録されていない方です', 'detecting'); }
+    try {
+      const det = await faceapi.detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks().withFaceDescriptor();
+      if (!det) { if (currentParent && Date.now() - lastFaceTime > 1500) hideProfile(); if (!currentParent) setStatus('保護者の顔をカメラに向けてください', 'detecting'); return; }
+      lastFaceTime = Date.now();
+      if (!labeledDescriptors.length) { setStatus('保護者が未登録です', ''); return; }
+      let best = null, bd = Infinity;
+      for (const p of labeledDescriptors) { const d = faceapi.euclideanDistance(det.descriptor, p.descriptor); if (d < bd) { bd = d; best = p; } }
+      if (bd < 0.5) { if (!currentParent || currentParent.id !== best.id) showProfile(best); }
+      else { if (currentParent) hideProfile(); setStatus('登録されていない方です', 'detecting'); }
+    } catch(e) { console.error(e); }
   }, 600);
 }
 
@@ -393,12 +399,14 @@ function generateAvatar(name) {
 
 function recordPickup() {
   if (!currentParent) return;
-  // チェックリストモーダルを開く
-  document.getElementById('checklistPhoto').src = currentParent.photo || generateAvatar(currentParent.name);
-  document.getElementById('checklistName').textContent = currentParent.name + ' さん';
-  document.getElementById('checklistChild').textContent = currentParent.childName ? `お子様：${currentParent.childName}` : '';
-  // チェックをリセット
+  // 認証済みの保護者を確定させる（この後カメラから顔が外れても記録できる）
+  checklistParent = { ...currentParent };
+  document.getElementById('checklistPhoto').src = checklistParent.photo || generateAvatar(checklistParent.name);
+  document.getElementById('checklistName').textContent = checklistParent.name + ' さん';
+  document.getElementById('checklistChild').textContent = checklistParent.childName ? `お子様：${checklistParent.childName}` : '';
+  // チェックとエラー表示をリセット
   document.querySelectorAll('#checklistItems .checklist-item').forEach(item => item.classList.remove('checked'));
+  document.getElementById('checklistError').classList.remove('show');
   updateChecklistProgress();
   document.getElementById('checklistOverlay').classList.add('show');
 }
@@ -412,21 +420,34 @@ function updateChecklistProgress() {
   const items = document.querySelectorAll('#checklistItems .checklist-item');
   const checked = document.querySelectorAll('#checklistItems .checklist-item.checked');
   document.getElementById('checklistProgress').textContent = `${checked.length} / ${items.length} 完了`;
-  document.getElementById('btnConfirmPickup').disabled = checked.length < items.length;
+  if (!isSubmitting) document.getElementById('btnConfirmPickup').disabled = checked.length < items.length;
 }
 
 function closeChecklist() {
   document.getElementById('checklistOverlay').classList.remove('show');
+  checklistParent = null;
 }
 
 async function confirmPickup() {
-  if (!currentParent) return;
-  closeChecklist();
-  const parent = { ...currentParent };
-  document.getElementById('btnPickup').disabled = true;
+  if (!checklistParent || isSubmitting) return;
+  const parent = checklistParent;
+  const btn = document.getElementById('btnConfirmPickup');
+  isSubmitting = true; btn.disabled = true; btn.textContent = '記録中...';
   const photo = capturePhoto();
   const jst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-  await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
+  try {
+    await db.collection('pickupRecords').add({ parentId: parent.id, parentName: parent.name, childName: parent.childName || '', timestamp: firebase.firestore.FieldValue.serverTimestamp(), photoBase64: photo });
+  } catch(e) {
+    // 記録に失敗してもモーダルに留まり、その場でやり直せるようにする
+    console.error(e);
+    const err = document.getElementById('checklistError');
+    err.textContent = '記録できませんでした。通信状況をご確認のうえ、もう一度お試しください。';
+    err.classList.add('show');
+    isSubmitting = false; btn.textContent = '✓ お迎え完了'; btn.disabled = false;
+    return;
+  }
+  isSubmitting = false; btn.textContent = '✓ お迎え完了';
+  closeChecklist();
   showThanks(parent, jst);
 }
 
@@ -456,7 +477,9 @@ async function returnToClock() {
   document.getElementById('thanksBar').style.width = '0%';
   document.getElementById('clockScreen').style.display = 'flex';
   hideProfile(); setStatus('保護者の顔をカメラに向けてください', 'detecting');
-  await loadParentDescriptors(); startDetection();
+  // 読み込みに失敗しても既存データで認証を続行する（画面が止まらないように）
+  try { await loadParentDescriptors(); } catch(e) { console.error(e); }
+  startDetection();
 }
 </script>
 </body>
