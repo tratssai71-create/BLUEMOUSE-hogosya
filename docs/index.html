@@ -59,8 +59,41 @@
       :root { --topbar-h: 52px; --topbar-logo-h: 30px; }
     }
 
+    /* ── 背景のマーブル ──
+       この画面は顔検出を0.6秒ごとに回し続けるため、背景の描画で邪魔をしないことが最優先。
+       ぼかしフィルタや background-position の動かし方は毎フレーム描き直しになるので使わず、
+       ふちが自然に消える radial-gradient を transform だけで動かす（GPU側だけで完結する）。 */
+    #bgMarble {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+      background: var(--bm-cream); pointer-events: none;
+    }
+    .bg-blob { position: absolute; border-radius: 50%; will-change: transform; }
+    .bg-blob--1 {
+      width: 95vmax; height: 95vmax; left: -28vmax; top: -34vmax;
+      background: radial-gradient(circle, rgba(245,210,74,0.34) 0%, rgba(245,210,74,0) 68%);
+      animation: marble1 58s ease-in-out infinite alternate;
+    }
+    .bg-blob--2 {
+      width: 82vmax; height: 82vmax; right: -30vmax; top: 6vmax;
+      background: radial-gradient(circle, rgba(217,165,32,0.20) 0%, rgba(217,165,32,0) 66%);
+      animation: marble2 71s ease-in-out infinite alternate;
+    }
+    .bg-blob--3 {
+      width: 78vmax; height: 78vmax; left: 12vmax; bottom: -36vmax;
+      background: radial-gradient(circle, rgba(242,144,108,0.16) 0%, rgba(242,144,108,0) 64%);
+      animation: marble3 64s ease-in-out infinite alternate;
+    }
+    @keyframes marble1 { from { transform: translate3d(0,0,0) scale(1); }      to { transform: translate3d(16vmax, 11vmax, 0) scale(1.16); } }
+    @keyframes marble2 { from { transform: translate3d(0,0,0) scale(1.1); }    to { transform: translate3d(-14vmax, 14vmax, 0) scale(0.94); } }
+    @keyframes marble3 { from { transform: translate3d(0,0,0) scale(0.96); }   to { transform: translate3d(12vmax, -13vmax, 0) scale(1.2); } }
+    /* 動きを減らす設定の端末では静止させる */
+    @media (prefers-reduced-motion: reduce) {
+      .bg-blob { animation: none !important; }
+    }
+
     /* Clock Screen */
-    #clockScreen { padding-top: var(--topbar-h); min-height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bm-cream); }
+    /* 背景を透かすため、この面自体は塗らない */
+    #clockScreen { position: relative; z-index: 1; padding-top: var(--topbar-h); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
     .clock-time-section { text-align: center; padding: 18px 20px 14px; }
     /* 数字はHPと同じく Inter。line-height はbodyの1.75だと行間が空きすぎるので詰める */
     .clock-time { font-family: "Inter", sans-serif; font-size: 56px; font-weight: 300; letter-spacing: 4px; line-height: 1.15; color: rgb(var(--bm-ink)); }
@@ -261,6 +294,13 @@
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">起動中...</div>
+</div>
+
+<!-- 背景のマーブル。装飾のみなので読み上げ対象から外す -->
+<div id="bgMarble" aria-hidden="true">
+  <span class="bg-blob bg-blob--1"></span>
+  <span class="bg-blob bg-blob--2"></span>
+  <span class="bg-blob bg-blob--3"></span>
 </div>
 
 <div class="topbar">
