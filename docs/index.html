@@ -105,12 +105,13 @@
     .child-name-text { font-size: 15px; font-weight: 700; color: rgb(var(--bm-ink)); }
 
     /* ボタンの上の一言。来所／退所で文言が変わる。
-       未認証のときは空になるが、高さを確保して画面が跳ねないようにする */
+       文言が無いとき（未認証・来所時）は要素ごと畳んで余白を残さない */
     .action-lead {
       width: min(460px, 88vw); margin-top: 14px; text-align: center;
       font-size: 15px; font-weight: 500; line-height: 1.6;
-      color: rgba(var(--bm-ink), 0.62); min-height: 1.6em;
+      color: rgba(var(--bm-ink), 0.62);
     }
+    .action-lead:empty { display: none; }
     /* 退所はモーダルが無いので、失敗時はここをエラー表示に使う */
     .action-lead.is-error { color: #c0453f; font-weight: 700; }
     .action-buttons { display: flex; width: min(460px, 88vw); margin-top: 10px; }
@@ -365,7 +366,7 @@ let todayKey = '', todayVisitCounts = {}, isLoadingVisits = false;
 // 来所／退所それぞれの文言。ここを直せば画面の言い回しが全て変わる
 const VISIT_COPY = {
   arrival: {
-    lead: 'お子様をお預かりします',
+    lead: '',
     button: '来所を記録する',
     checklistSubtitle: 'ご利用前に以下の項目をご確認ください',
     checklistConfirm: '✓ 来所を記録する',
