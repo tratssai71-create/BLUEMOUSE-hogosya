@@ -177,8 +177,8 @@
     }
     .checklist-header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
     .checklist-parent-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(107,79,8,0.25); flex-shrink: 0; }
-    .checklist-name { font-size: 17px; font-weight: 700; }
-    .checklist-child { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+    .checklist-name { font-size: 20px; font-weight: 700; }
+    .checklist-child { font-size: 15px; opacity: 0.75; margin-top: 2px; }
     .checklist-subtitle { font-size: 13px; opacity: 0.8; margin-top: 10px; }
     .checklist-body { padding: 20px 24px; }
     .checklist-error {
@@ -585,7 +585,7 @@ function recordPickup() {
   document.getElementById('btnConfirmPickup').textContent = copy.checklistConfirm;
   document.getElementById('checklistPhoto').src = checklistParent.photo || generateAvatar(checklistParent.name);
   document.getElementById('checklistName').textContent = checklistParent.name + ' さん';
-  document.getElementById('checklistChild').textContent = checklistParent.childName ? `お子様：${checklistParent.childName}` : '';
+  document.getElementById('checklistChild').textContent = checklistParent.childName ? `おこさま：${checklistParent.childName}` : '';
   // チェックとエラー表示をリセット
   document.querySelectorAll('#checklistItems .checklist-item').forEach(item => item.classList.remove('checked'));
   document.getElementById('checklistError').classList.remove('show');
