@@ -291,7 +291,7 @@
     <div id="childPhotoArea">
       <img id="childPhotoEl" src="" alt="">
       <div>
-        <div class="child-label">お子様</div>
+        <div class="child-label">おこさま</div>
         <div class="child-name-text" id="childNameEl"></div>
       </div>
     </div>
@@ -669,7 +669,7 @@ function showThanks(parent, time) {
   document.getElementById('clockScreen').style.display = 'none';
   const pad = n => String(n).padStart(2,'0');
   document.getElementById('thanksName').textContent = parent.name + ' さん';
-  document.getElementById('thanksChild').textContent = parent.childName ? `お子様：${parent.childName}` : '';
+  document.getElementById('thanksChild').textContent = parent.childName ? `おこさま：${parent.childName}` : '';
   document.getElementById('thanksPhoto').src = parent.photo || generateAvatar(parent.name);
   const copy = VISIT_COPY[parent.visitType] || VISIT_COPY.departure;
   document.querySelector('.thanks-badge').textContent = copy.thanksBadge;
