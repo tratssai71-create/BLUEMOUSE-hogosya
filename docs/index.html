@@ -74,22 +74,22 @@
        補間するだけ）。重くなるのは枚数を増やしたときなので、3枚のまま据え置く。 */
     .bg-blob--1 {
       width: 95vmax; height: 95vmax; left: -28vmax; top: -34vmax;
-      background: radial-gradient(ellipse 64% 48% at 44% 42%, rgba(245,210,74,0.36) 0%, rgba(245,210,74,0) 70%);
+      background: radial-gradient(ellipse 64% 48% at 44% 42%, rgba(245,210,74,0.24) 0%, rgba(245,210,74,0) 70%);
       animation: marble1 36s ease-in-out infinite alternate;
     }
     .bg-blob--2 {
       width: 82vmax; height: 82vmax; right: -30vmax; top: 6vmax;
-      background: radial-gradient(ellipse 58% 46% at 56% 48%, rgba(217,165,32,0.22) 0%, rgba(217,165,32,0) 68%);
+      background: radial-gradient(ellipse 58% 46% at 56% 48%, rgba(217,165,32,0.14) 0%, rgba(217,165,32,0) 68%);
       animation: marble2 45s ease-in-out infinite alternate;
     }
     .bg-blob--3 {
       width: 78vmax; height: 78vmax; left: 12vmax; bottom: -36vmax;
-      background: radial-gradient(ellipse 60% 44% at 48% 54%, rgba(242,144,108,0.18) 0%, rgba(242,144,108,0) 66%);
+      background: radial-gradient(ellipse 60% 44% at 48% 54%, rgba(242,144,108,0.11) 0%, rgba(242,144,108,0) 66%);
       animation: marble3 40s ease-in-out infinite alternate;
     }
-    @keyframes marble1 { from { transform: translate3d(0,0,0) rotate(0deg) scale(1); }      to { transform: translate3d(22vmax, 15vmax, 0) rotate(30deg) scale(1.24); } }
-    @keyframes marble2 { from { transform: translate3d(0,0,0) rotate(0deg) scale(1.12); }   to { transform: translate3d(-20vmax, 19vmax, 0) rotate(-34deg) scale(0.9); } }
-    @keyframes marble3 { from { transform: translate3d(0,0,0) rotate(0deg) scale(0.94); }   to { transform: translate3d(18vmax, -18vmax, 0) rotate(26deg) scale(1.26); } }
+    @keyframes marble1 { from { transform: translate3d(-8vmax, -6vmax, 0) rotate(0deg) scale(1); }    to { transform: translate3d(34vmax, 24vmax, 0) rotate(34deg) scale(1.28); } }
+    @keyframes marble2 { from { transform: translate3d(8vmax, -8vmax, 0) rotate(0deg) scale(1.14); }  to { transform: translate3d(-32vmax, 29vmax, 0) rotate(-38deg) scale(0.88); } }
+    @keyframes marble3 { from { transform: translate3d(-7vmax, 8vmax, 0) rotate(0deg) scale(0.92); }  to { transform: translate3d(29vmax, -28vmax, 0) rotate(30deg) scale(1.3); } }
     /* 動きを減らす設定の端末では静止させる */
     @media (prefers-reduced-motion: reduce) {
       .bg-blob { animation: none !important; }
